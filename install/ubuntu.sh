@@ -111,18 +111,15 @@
         # save the username of the user that ran the script
         USERNAME=$(whoami | awk '{print $1}')
         MACHINENAME=$(hostname)
-        ubwsl_echo "=> Installing LAMP stack as $USERNAME on machine $MACHINENAME"
+        ubwsl_echo "=> Hello, $USERNAME! We're going to install your fresh new LAMP stack as on your \"$MACHINENAME\" machine"
 
         # echo that we're going to ask dor the sudo password
         ubwsl_echo "=> We're going to ask for the sudo password below:"
         ubwsl_echo
 
-        # login as sudo
-        sudo su - root
-
-        # check we're running as root
-        if [ "$(id -u)" != "0" ]; then
-            ubwsl_echo "=> Cannot switch to root user. Please run this script as root."
+        # check if we can run a command with sudo to verify that the user has sudo access
+        if ! sudo true; then
+            ubwsl_echo "=> Cannot \"sudo\" with user \"$USERNAME\". Cannot continue."
             ubwsl_echo
             exit 1
         fi
@@ -136,33 +133,33 @@
 
         # install apache + php + redis + mysql
         ubwsl_echo "=> Installing Apache + PHP + Redis + MySQL"
-        apt update -y && apt upgrade -y
-        apt install -y mktemp net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+        sudo apt update -y && sudo apt upgrade -y
+        sudo apt install -y mktemp net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
         LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
         LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
-        apt update -y && apt upgrade -y
+        sudo apt update -y && sudo apt upgrade -y
         PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
         APTPACKS=$(for VER in $PHPVERS; do
             echo -n "libapache2-mod-php$VER php$VER "
             for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done
         done)
-        apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
-        a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
-        a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
-        a2enmod actions fcgid alias proxy_fcgi setenvif rewrite headers ssl http2 mpm_event brotli
-        a2dissite 000-default
-        systemctl enable apache2.service
-        systemctl restart apache2.service
-        systemctl enable redis-server.service
-        systemctl start redis-server.service
-        update-alternatives --set php /usr/bin/php8.2
-        update-alternatives --set phar /usr/bin/phar8.2
-        update-alternatives --set phar.phar /usr/bin/phar.phar8.2
+        sudo apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
+        sudo a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
+        sudo a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
+        sudo a2enmod actions fcgid alias proxy_fcgi setenvif rewrite headers ssl http2 mpm_event brotli
+        sudo a2dissite 000-default
+        sudo systemctl enable apache2.service
+        sudo systemctl restart apache2.service
+        sudo systemctl enable redis-server.service
+        sudo systemctl start redis-server.service
+        sudo update-alternatives --set php /usr/bin/php8.2
+        sudo update-alternatives --set phar /usr/bin/phar8.2
+        sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.2
 
-        apt install mariadb-server
-        systemctl enable mariadb.service
-        systemctl start mariadb.service
+        sudo apt install -y mariadb-server
+        sudo systemctl enable mariadb.service
+        sudo systemctl start mariadb.service
 
         # create Root passwords for user "root" and "admin"
         PASS_MYSQL_ROOT=$(openssl rand -base64 64 | sed 's/[^a-zA-Z0-9]//g' | head -c 32)
@@ -170,7 +167,7 @@
 
         SECURE_MYSQL=$(expect -c "
 set timeout 3
-spawn mysql_secure_installation
+spawn sudo mysql_secure_installation
 expect \"Enter current password for root (enter for none):\"
 send \"\r\"
 expect \"root password?\"
@@ -226,13 +223,13 @@ expect eof
 
         # modify /etc/apache2/envvars so that APACHE_RUN_USER=$USERNAME and APACHE_RUN_GROUP=$USERNAME
         ubwsl_echo "=> Modifying /etc/apache2/envvars"
-        sed -i "s/APACHE_RUN_USER=www-data/APACHE_RUN_USER=$USERNAME/g" /etc/apache2/envvars
-        sed -i "s/APACHE_RUN_GROUP=www-data/APACHE_RUN_GROUP=$USERNAME/g" /etc/apache2/envvars
+        sudo sed -i "s/APACHE_RUN_USER=www-data/APACHE_RUN_USER=$USERNAME/g" /etc/apache2/envvars
+        sudo sed -i "s/APACHE_RUN_GROUP=www-data/APACHE_RUN_GROUP=$USERNAME/g" /etc/apache2/envvars
 
         # modify /etc/apache2/ports.conf so that Listen 80 is Listen 127.0.0.1:80 and Listen 443 is Listen 127.0.0.1:443
         ubwsl_echo "=> Modifying /etc/apache2/ports.conf"
-        sed -i "s/Listen 80/Listen 127.0.0.1:80/g" /etc/apache2/ports.conf
-        sed -i "s/Listen 443/Listen 127.0.0.1:443/g" /etc/apache2/ports.conf
+        sudo sed -i "s/Listen 80/Listen 127.0.0.1:80/g" /etc/apache2/ports.conf
+        sudo sed -i "s/Listen 443/Listen 127.0.0.1:443/g" /etc/apache2/ports.conf
 
         # create a new /etc/mysql/mariadb.conf.d/99-custom.cnf file
         ubwsl_echo "=> Creating a new /etc/mysql/mariadb.conf.d/99-custom.cnf file"
@@ -301,19 +298,16 @@ quote_names
 max_allowed_packet              = 1024M
 EOF
 
-        echo "$MYSQL_CONFIG" >/etc/mysql/mariadb.conf.d/99-custom.cnf
+        sudo echo "$MYSQL_CONFIG" >/etc/mysql/mariadb.conf.d/99-custom.cnf
 
         # restart services
         ubwsl_echo "=> Restarting Apache and Mysql services"
-        systemctl restart apache2.service
-        systemctl restart mariadb.service
+        sudo systemctl restart apache2.service
+        sudo systemctl restart mariadb.service
 
         # create the /etc/apache2/certs-selfsigned/ directory
         ubwsl_echo "=> Creating the /etc/apache2/certs-selfsigned/ directory"
-        mkdir -p /etc/apache2/certs-selfsigned/
-
-        # exit from the root session
-        exit
+        sudo mkdir -p /etc/apache2/certs-selfsigned/
 
         # create the utils folder
         ubwsl_echo "=> Creating the ~/utils/ folder"
@@ -322,14 +316,21 @@ EOF
         # download the "create-test-environment.php" script
         ubwsl_echo "=> Downloading the create-test-environment.php script"
         TEMPFILE=$(mktemp)
-        ubwsl_download -s "https://gist.githubusercontent.com/mauriziofonte/299c39485f7d598984ec32106f710cae/raw/50c5bce1ab6ca728a918fbd8273e3048dc29281a/test.ps1" -o "$TEMPFILE"
+        ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/create-test-environment.php" -o "$TEMPFILE"
         sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
         mv "$TEMPFILE" ~/utils/create-test-environment.php
+
+        # download the "delete-test-environment.php" script
+        ubwsl_echo "=> Downloading the delete-test-environment.php script"
+        TEMPFILE=$(mktemp)
+        ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/delete-test-environment.php" -o "$TEMPFILE"
+        sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
+        mv "$TEMPFILE" ~/utils/delete-test-environment.php
 
         # download the "create-selfsigned-ssl-cert.sh" script
         ubwsl_echo "=> Downloading the create-selfsigned-ssl-cert.sh script"
         TEMPFILE=$(mktemp)
-        ubwsl_download -s "https://gist.githubusercontent.com/mauriziofonte/299c39485f7d598984ec32106f710cae/raw/50c5bce1ab6ca728a918fbd8273e3048dc29281a/test.ps1" -o "$TEMPFILE"
+        ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/create-selfsigned-ssl-cert.sh" -o "$TEMPFILE"
         sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
         mv "$TEMPFILE" ~/utils/create-selfsigned-ssl-cert.sh
         chmod +x ~/utils/create-selfsigned-ssl-cert.sh
