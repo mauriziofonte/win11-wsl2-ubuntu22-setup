@@ -1,0 +1,53 @@
+alias testenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/create-test-environment.php"
+alias removetestenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/delete-test-environment.php"
+alias updatecomposer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar self-update && /usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar self-update"
+alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias composer80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias composer74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias composer73="/usr/bin/php7.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar"
+alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar"
+alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar"
+alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar"
+alias php="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php73="/usr/bin/php7.3 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias apt="sudo apt-get"
+alias ls="ls -lash --color=auto --group-directories-first"
+alias cd..="cd .."
+alias ..="cd ../../"
+alias ...="cd ../../../"
+alias ....="cd ../../../../"
+alias .....="cd ../../../../"
+alias .4="cd ../../../../"
+alias .5="cd ../../../../.."
+alias ports="sudo netstat -tulanp"
+alias wslrestart="history -a && cmd.exe /C wsl --shutdown"
+alias tic="git"
+alias npmclean="npm ci"
+alias npmcheck="ncu"
+
+gitremove() {
+    git branch -d "$@"
+    git push origin --delete "$@"
+}
+
+hugefiles() {
+    du -a "$@" | sort -n -r | head -n 100
+}
+
+hugedirs() {
+    cd "$@" && du -hsx -- * | sort -rh | head -100
+}
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion

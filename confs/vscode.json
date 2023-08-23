@@ -1,0 +1,97 @@
+{
+	"explorer.confirmDelete": false,
+	"explorer.confirmDragAndDrop": false,
+	"workbench.iconTheme": "material-icon-theme",
+	"workbench.colorTheme": "Quiet Light",
+	"workbench.colorCustomizations": {
+		"editorCursor.foreground": "#444"
+	},
+	"workbench.editor.showTabs": true,
+	"terminal.integrated.fontFamily": "Source Code Pro",
+	"terminal.integrated.lineHeight": 0.8,
+	"terminal.integrated.enableBell": false,
+	"terminal.integrated.letterSpacing": -0.1,
+	"terminal.integrated.fontSize": 16,
+	"editor.fontFamily": "Roboto Sans",
+	"editor.fontWeight": "600",
+	"editor.cursorStyle": "line",
+	"editor.cursorBlinking": "phase",
+	"editor.rulers": [130],
+	"editor.formatOnSave": true,
+	"editor.minimap.enabled": false,
+	"editor.wordWrap": "on",
+	"editor.insertSpaces": true,
+	"editor.tabSize": 4,
+	"editor.guides.bracketPairs": true,
+	"html.format.contentUnformatted": "pre,code,textarea",
+	"html.format.extraLiners": "head, body, /html",
+	"html.format.indentHandlebars": false,
+	"html.format.indentInnerHtml": false,
+	"html.format.maxPreserveNewLines": null,
+	"html.format.preserveNewLines": true,
+	"html.format.wrapLineLength": 130,
+	"html.format.wrapAttributes": "auto",
+	"gitlens.telemetry.enabled": false,
+	"prettier.trailingComma": "all",
+	"prettier.endOfLine": "auto",
+	"prettier.singleQuote": true,
+	"prettier.useTabs": true,
+	"prettier.tabWidth": 4,
+	"prettier.printWidth": 130,
+	"prettier.bracketSameLine": true,
+	"prettier.semi": false,
+	"[php]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "junstyle.php-cs-fixer"
+	},
+	"[js]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascript]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[css]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsx]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"php.suggest.basic": false,
+	"php.validate.enable": true,
+	"typescript.updateImportsOnFileMove.enabled": "never",
+	"git.enableSmartCommit": true,
+	"git.autofetch": true,
+	"git.confirmSync": false,
+	"php-cs-fixer.executablePath": "/home/##LINUX_USERNAME##/utils/.composer/vendor/bin/php-cs-fixer",
+	"php-cs-fixer.executablePathWindows": "",
+	"php-cs-fixer.onsave": false,
+	"php-cs-fixer.rules": "@PSR2",
+	"php-cs-fixer.config": ".php_cs;.php_cs.dist",
+	"php-cs-fixer.allowRisky": false,
+	"php-cs-fixer.pathMode": "override",
+	"php-cs-fixer.exclude": [],
+	"php-cs-fixer.autoFixByBracket": true,
+	"php-cs-fixer.autoFixBySemicolon": false,
+	"php-cs-fixer.formatHtml": false,
+	"php-cs-fixer.documentFormattingProvider": true,
+	"php-cs-fixer.lastDownload": 0,
+	"php-docblocker.returnGap": true,
+	"php-docblocker.qualifyClassNames": true,
+	"php-docblocker.author": {
+		"name": "The Developer",
+		"email": "info@the-developer.example"
+	},
+	"diffEditor.ignoreTrimWhitespace": false,
+	"editor.inlineSuggest.enabled": true,
+	"window.zoomLevel": 0
+}
