@@ -17,7 +17,7 @@ During my years of on-field experience, I've created _my own workflow_ that allo
 If you want to automatically install everything, open a `PowerShell` window with **elevated privileges** (_Run ad Admin_)
 
 ```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; $desktopPath = [Environment]::GetFolderPath('Desktop'); $url = 'UPDATE_ME'; $outputPath = Join-Path -Path $desktopPath -ChildPath 'test.ps1'; (New-Object System.Net.WebClient).DownloadFile($url, $outputPath); & $outputPath
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; $desktopPath = [Environment]::GetFolderPath('Desktop'); $url = 'https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/install/win11.ps1'; $outputPath = Join-Path -Path $desktopPath -ChildPath 'test.ps1'; (New-Object System.Net.WebClient).DownloadFile($url, $outputPath); & $outputPath
 ```
 
 The automated installer will:
@@ -52,3 +52,19 @@ If you used the automated install method, you'll also need to remove a specific 
 ```powershell
 Remove-Item -Path "HKCU:\Software\WSL2Setup" -Force -ErrorAction SilentlyContinue | Out-Null
 ```
+
+## Mantainers
+
+Currently, the sole maintainer is @mauriziofonte - more maintainers are quite welcome, as the guides are lenghty, and the automated installer is quite complex and difficult to debug without having to create & destroy WSL instances every time.
+
+## License
+
+Released under MIT License. Refer to [LICENSE](/LICENSE) file.
+
+## Disclaimer
+
+The information provided in this repository is for general informational purposes only. All information is provided in good faith, however I make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on this repository.
+
+UNDER NO CIRCUMSTANCE SHALL I HAVE ANY LIABILITY TO YOU FOR ANY LOSS OR DAMAGE OF ANY KIND INCURRED AS A RESULT OF THE USE OF THE INFORMATIONS, GUIDES, HOW-TOS, AND SCRIPTS PROVIDED IN THIS REPOSITORY OR RELIANCE ON ANY INFORMATION PROVIDED ON THIS REPOSITORY. YOUR USE OF THIS WORK AND YOUR RELIANCE ON ANY INFORMATION IS SOLELY AT YOUR OWN RISK.
+
+This repository contains links to other websites or content belonging to or originating from third parties or links to websites and features in banners or other advertising. Such external links are not investigated, monitored, or checked for accuracy, adequacy, validity, reliability, availability, or completeness.
