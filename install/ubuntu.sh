@@ -134,9 +134,9 @@
         # install apache + php + redis + mysql
         ubwsl_echo "=> Installing Apache + PHP + Redis + MySQL"
         sudo apt update -y && sudo apt upgrade -y
-        sudo apt install -y mktemp net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
-        LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
-        LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
+        sudo apt install -y net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+        LC_ALL=C.UTF-8 sudo add-apt-repository ppa:ondrej/php
+        LC_ALL=C.UTF-8 sudo add-apt-repository ppa:ondrej/apache2
         sudo apt update -y && sudo apt upgrade -y
         PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
@@ -359,7 +359,25 @@ EOF
         # create the .ssh folder and generate a secure ssh key
         ubwsl_echo "=> Creating the ~/.ssh/ folder and generating a secure ssh key"
         mkdir -p ~/.ssh
-        ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "$USERNAME@$MACHINENAME"
+        # we need to use "expect" to generate the key, because "ssh-keygen" will ask for a password.
+        # afterwards, we're going to call ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "$USERNAME@$MACHINENAME"
+
+        # create the expect script
+        read -r -d '' EXPECT_SCRIPT <<-'EOF'
+spawn ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "##USERNAME##@##MACHINENAME##"
+expect "Enter passphrase (empty for no passphrase):"
+send "\r"
+expect "Enter same passphrase again:"
+send "\r"
+expect eof
+EOF
+
+        # replace the placeholders with the actual values
+        EXPECT_SCRIPT=$(echo "$EXPECT_SCRIPT" | sed "s/##USERNAME##/$USERNAME/g")
+        EXPECT_SCRIPT=$(echo "$EXPECT_SCRIPT" | sed "s/##MACHINENAME##/$MACHINENAME/g")
+
+        # execute the expect script
+        echo "$EXPECT_SCRIPT" | expect
 
         # create the .bash_local file with some useful aliases
         ubwsl_echo "=> Creating the ~/.bash_local file with some useful aliases"
