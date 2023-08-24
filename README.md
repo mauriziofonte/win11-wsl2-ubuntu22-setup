@@ -18,7 +18,7 @@ Specifically, For _Windows 10_, it is _required_ to have a minimum version 1903,
 
 ### Automated Install
 
-If you want to automatically install everything, open a `PowerShell` window with **elevated privileges** (_Run ad Admin_)
+If you want to automatically install everything, open a `PowerShell` window with **elevated privileges** (_Run as Admin_)
 
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; $desktopPath = [Environment]::GetFolderPath('Desktop'); $url = 'https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/win11.ps1'; $outputPath = Join-Path -Path $desktopPath -ChildPath 'install-ubuntu22-wsl2.ps1'; (New-Object System.Net.WebClient).DownloadFile($url, $outputPath); & $outputPath
@@ -51,7 +51,7 @@ To completely remove Ubuntu 22.04 from your computer, open a `PowerShell` window
 wsl --unregister Ubuntu-22.04
 ```
 
-If you used the automated install method, you'll also need to remove a specific _HKCU_ Registry Key. To do so, open a `PowerShell` window with **elevated privileges** (_Run ad Admin_) and run:
+If you used the automated install method, you'll also need to remove a specific _HKCU_ Registry Key. To do so, open a `PowerShell` window with **elevated privileges** (_Run as Admin_) and run:
 
 ```powershell
 Remove-Item -Path "HKCU:\Software\WSL2Setup" -Force -ErrorAction SilentlyContinue | Out-Null
