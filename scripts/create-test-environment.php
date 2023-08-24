@@ -53,9 +53,9 @@ while ($work) {
 // 3. ask for the PHP version for PHP-FPM
 $work = true;
 while ($work) {
-    message('Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1 or 8.2)');
+    message('Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 or 8.3)');
     $php_version = readline('  Type the PHP version: ');
-    if (in_array($php_version, ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2'])) {
+    if (in_array($php_version, ['5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3'])) {
         $work = false;
         define('PHPVER', $php_version);
     } else {

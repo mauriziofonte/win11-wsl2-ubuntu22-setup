@@ -10,6 +10,16 @@ During my years of on-field experience, I've created _my own workflow_ that allo
 2. Use the _Linux Terminal_ with all the performance optimizations made possible by **WSL2**, and specifically use **Ubuntu** as its userbase is consistent: if you encounter a problem, or need a specific package, there's a good probability that you will find informations on how to fix the issue or complete the task in minutes
 3. Use native _systemd services_ like **Apache** and **MariaDB** instead of relying on _Containers_ like Docker. Although, in fact, _Docker performance is nearly identical to native performance in Linux_, (references: [1](https://dominoweb.draco.res.ibm.com/reports/rc25482.pdf) and [2](https://stackoverflow.com/questions/21889053/what-is-the-runtime-performance-cost-of-a-docker-container)) my **personal opinion** is that, if a Client has its own VM or shared hosting or voodoo server where _Dockerization is technically not feasible_, then **development workflow, staging and test should be as much as possible adherent to what will the production environment be**. That said, this means having a set of tools to allow the developer _to quicky deploy_ on various types of production configurations (PHP versions, mainly).
 
+## What will the LAMP stack be?
+
+The _LAMP Stack_ will be configured in this way:
+
+1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.3_ (_Note: PHP 8.3 is still in beta, and is set to be released on November 23, 2023_)
+2. Use the `ppa:ondrej/apache2` Apache repo
+3. Make _Apache Virtualhosts_ work via _PHP-FPM_ and enable the developer to use quick _deploy_ commands to setup a native local VirtualHost located in the Ubuntu machine
+4. Let the developer choose the target PHP version of the deployed VirtualHost ([see here](/docs/en/SETUP-EN.md#important-notes-on-aliases-enabled-via-bash_local))
+5. Use `mariadb 10.6` and optimize Mysql so that it will not create headaches ([see here](/docs/en/SETUP-EN.md#c-modify-mysql-configuration))
+
 ## Installation instructions
 
 Installation instructions are the same for both **Windows 11** and **Windows 10**.

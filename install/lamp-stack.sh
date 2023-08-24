@@ -93,7 +93,7 @@
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/php
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
-        PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+        PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
         APTPACKS=$(for VER in $PHPVERS; do
             echo -n "libapache2-mod-php$VER php$VER "
@@ -375,6 +375,7 @@ alias remove-test-env="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit
 alias list-test-envs="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/list-test-environments.php"
 alias updatecomposer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar self-update && /usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar self-update"
 alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
+alias composer83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
 alias composer80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
 alias composer74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
@@ -385,6 +386,7 @@ alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M ~/
 alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar"
 alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar"
 alias php="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M"
