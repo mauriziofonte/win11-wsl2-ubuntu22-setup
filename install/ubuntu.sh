@@ -347,7 +347,9 @@ expect eof"
             # install NVM
             ubwsl_echo "Installing NVM"
             wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
-            source ~/.bashrc
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
             # install NodeJS
             ubwsl_echo "Installing NodeJS"
