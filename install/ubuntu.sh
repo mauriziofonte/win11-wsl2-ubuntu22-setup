@@ -208,23 +208,20 @@
         # modify the APT config so that we are more lax on retries and timeouts
         echo -e "Acquire::Retries \"50\";\nAcquire::https::Timeout \"240\";\nAcquire::http::Timeout \"240\";\n" | sudo tee /etc/apt/apt.conf.d/99-custom.conf >/dev/null
 
-        # alias the apt command
-        alias apt='sudo apt-get --assume-yes'
-
         # install apache + php + redis + mysql
         ubwsl_echo info "Installing Apache + PHP + Redis + MySQL"
-        apt update && apt upgrade
-        apt install net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+        sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
+        sudo apt-get --assume-yes --quiet install net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/php
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
-        apt update && apt upgrade
+        sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
         PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
         APTPACKS=$(for VER in $PHPVERS; do
             echo -n "libapache2-mod-php$VER php$VER "
             for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done
         done)
-        apt install apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
+        sudo apt-get --assume-yes --quiet install apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
         sudo a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
         sudo a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
         sudo a2enmod actions fcgid alias proxy_fcgi setenvif rewrite headers ssl http2 mpm_event brotli
@@ -237,7 +234,7 @@
         sudo update-alternatives --set phar /usr/bin/phar8.2
         sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.2
 
-        apt install mariadb-server
+        sudo apt-get --assume-yes --quiet install mariadb-server
         sudo systemctl enable mariadb.service
         sudo systemctl start mariadb.service
 
