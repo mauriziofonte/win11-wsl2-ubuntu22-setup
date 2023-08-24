@@ -2,17 +2,80 @@
 
 { # this ensures the entire script is downloaded #
 
+    if (($(tput colors) >= 8)); then
+        readonly reset="\e[0m" # Uppercase = bold.
+        readonly black="\e[0;30m"
+        readonly BLACK="\e[1;30m"
+        readonly red="\e[0;31m"
+        readonly RED="\e[1;31m"
+        readonly green="\e[0;32m"
+        readonly GREEN="\e[1;32m"
+        readonly yellow="\e[0;33m"
+        readonly YELLOW="\e[1;33m"
+        readonly blue="\e[0;34m"
+        readonly BLUE="\e[1;34m"
+        readonly magenta="\e[0;35m"
+        readonly MAGENTA="\e[1;35m"
+        readonly cyan="\e[0;36m"
+        readonly CYAN="\e[1;36m"
+        readonly white="\e[0;37m"
+        readonly WHITE="\e[1;37m"
+    fi
+
+    function heading() { printf "${WHITE}${1}${reset}\n"; }
+    function question() { printf "${yellow}${1}${reset}\n"; }
+    function headsup() { printf "${cyan}${1}${reset}\n"; }
+    function info() { printf "${blue}${1}${reset}\n"; }
+    function warning() { printf "${magenta}Attention: ${1}${reset}\n"; }
+    function error() { printf "${red}ERROR: ${1}${reset}\n"; }
+    function success() { printf "${green}${1}${reset}\n"; }
+    function abort() {
+        printf "${RED}Abort. ${1}${reset}\n\n"
+        exit
+    }
+
     ubwsl_has() {
         type "$1" >/dev/null 2>&1
     }
 
     ubwsl_echo() {
-        command printf %s\\n "$*" 2>/dev/null
+        local msg_type="$1"
+        shift
+
+        case "$msg_type" in
+        question)
+            question "$*"
+            ;;
+        headsup)
+            headsup "$*"
+            ;;
+        info)
+            info "$*"
+            ;;
+        heading)
+            heading "$*"
+            ;;
+        error)
+            error "$*"
+            ;;
+        warning)
+            warning "$*"
+            ;;
+        success)
+            success "$*"
+            ;;
+        abort)
+            abort "$*"
+            ;;
+        normal | *)
+            printf "${white}%s${reset}\\n" "$*"
+            ;;
+        esac
     }
 
     if [ -z "${BASH_VERSION}" ] || [ -n "${ZSH_VERSION}" ]; then
         # shellcheck disable=SC2016
-        ubwsl_echo >&2 'Error: the install instructions explicitly say to pipe the install script to `bash`; please follow them'
+        ubwsl_echo error 'Error: the install instructions explicitly say to pipe the install script to `bash`; please follow them'
         exit 1
     fi
 
@@ -108,43 +171,61 @@
 
     ubwsl_do_install() {
 
+        # echo the header of the script
+        ubwsl_echo heading "=========================================================================="
+        ubwsl_echo heading " Ubuntu 22.04 LTS (Jammy Jellyfish) LAMP stack installer                  "
+        ubwsl_echo heading " Report bugs to github.com/mauriziofonte/win11-wsl2-ubuntu22-setup/issues "
+        ubwsl_echo heading "=========================================================================="
+
         # save the username of the user that ran the script
         USERNAME=$(whoami | awk '{print $1}')
         MACHINENAME=$(hostname)
-        ubwsl_echo "=> Hello, $USERNAME! We're going to install your fresh new LAMP stack as on your \"$MACHINENAME\" machine"
+        ubwsl_echo headsup "Hello, $USERNAME! We're going to install your fresh new LAMP stack as on your \"$MACHINENAME\" machine"
 
         # echo that we're going to ask dor the sudo password
-        ubwsl_echo "=> We're going to ask for the sudo password below:"
+        ubwsl_echo question "We're going to ask for the sudo password, to check if you can run the commands as root:"
         ubwsl_echo
 
         # check if we can run a command with sudo to verify that the user has sudo access
         if ! sudo true; then
-            ubwsl_echo "=> Cannot \"sudo\" with user \"$USERNAME\". Cannot continue."
+            ubwsl_echo error "Cannot \"sudo\" with user \"$USERNAME\". Cannot continue."
             ubwsl_echo
             exit 1
         fi
 
         # check we've got APT installed
         if ! ubwsl_has "apt-get"; then
-            ubwsl_echo "=> Cannot find apt-get. Please install it and try again."
+            ubwsl_echo error "Cannot find apt-get. Please install it and try again."
             ubwsl_echo
             exit 1
         fi
 
+        # ask for the sudo password, we'll need it later
+        ubwsl_echo question "We're going to ask you again for the sudo password (we'll need it later):"
+        PASS_MYSQL_ROOT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+        read -s -p "[sudo] password for $USERNAME: " SUDO_PASSWORD
+        ubwsl_echo
+
+        # modify the APT config so that we are more lax on retries and timeouts
+        echo -e "Acquire::Retries \"100\";\nAcquire::https::Timeout \"240\";\nAcquire::http::Timeout \"240\";\nDebug::Acquire::https \"true\";\n" | sudo tee /etc/apt/apt.conf.d/99-custom.conf >/dev/null
+
+        # alias the apt command
+        alias apt='sudo apt-get --assume-yes'
+
         # install apache + php + redis + mysql
-        ubwsl_echo "=> Installing Apache + PHP + Redis + MySQL"
-        sudo apt update -y && sudo apt upgrade -y
-        sudo apt install -y net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
-        LC_ALL=C.UTF-8 sudo add-apt-repository ppa:ondrej/php
-        LC_ALL=C.UTF-8 sudo add-apt-repository ppa:ondrej/apache2
-        sudo apt update -y && sudo apt upgrade -y
+        ubwsl_echo info "Installing Apache + PHP + Redis + MySQL"
+        apt update && apt upgrade
+        apt install net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+        LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/php
+        LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
+        apt update && apt upgrade
         PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
         APTPACKS=$(for VER in $PHPVERS; do
             echo -n "libapache2-mod-php$VER php$VER "
             for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done
         done)
-        sudo apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
+        apt install apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
         sudo a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
         sudo a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
         sudo a2enmod actions fcgid alias proxy_fcgi setenvif rewrite headers ssl http2 mpm_event brotli
@@ -157,83 +238,89 @@
         sudo update-alternatives --set phar /usr/bin/phar8.2
         sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.2
 
-        sudo apt install -y mariadb-server
+        apt install mariadb-server
         sudo systemctl enable mariadb.service
         sudo systemctl start mariadb.service
 
         # create Root passwords for user "root" and "admin"
-        PASS_MYSQL_ROOT=$(openssl rand -base64 64 | sed 's/[^a-zA-Z0-9]//g' | head -c 32)
-        PASS_MYSQL_ADMIN=$(openssl rand -base64 64 | sed 's/[^a-zA-Z0-9]//g' | head -c 32)
+        PASS_MYSQL_ROOT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+        PASS_MYSQL_ADMIN=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
 
-        SECURE_MYSQL=$(expect -c "
-set timeout 3
+        # create the expect script for mysql_secure_installation
+        EXPECT_SCRIPT="
+set timeout 2
 spawn sudo mysql_secure_installation
-expect \"Enter current password for root (enter for none):\"
-send \"\r\"
-expect \"root password?\"
-send \"y\r\"
+expect \"\\[sudo\\] password for*\"
+send \"$SUDO_PASSWORD\r\"
+expect \"Enter current password for root (enter for none)\"
+send \"x\r\"
+expect \"Switch to unix_socket authentication\"
+send \"n\r\"
+expect \"Change the root password?\"
+send \"Y\r\"
 expect \"New password:\"
 send \"$PASS_MYSQL_ROOT\r\"
 expect \"Re-enter new password:\"
 send \"$PASS_MYSQL_ROOT\r\"
 expect \"Remove anonymous users?\"
-send \"y\r\"
+send \"Y\r\"
 expect \"Disallow root login remotely?\"
-send \"y\r\"
+send \"Y\r\"
 expect \"Remove test database and access to it?\"
-send \"y\r\"
+send \"Y\r\"
 expect \"Reload privilege tables now?\"
-send \"y\r\"
-expect eof
-")
+send \"Y\r\"
+expect eof"
 
         # Execute mysql_secure_installation
-        ubwsl_echo "=> Executing mysql_secure_installation"
-        echo "${SECURE_MYSQL}"
+        ubwsl_echo info "Executing mysql_secure_installation"
+        ubwsl_echo warning "Do not type anything, the installer will do it for you!"
+        echo "$EXPECT_SCRIPT" | expect
 
-        # create user "admin" with password "admin"
-        NEW_MYSQL_USER=$(expect -c "
-set timeout 3
+        # create a new Mysql user "default" with password $PASS_MYSQL_DEFAULT
+        EXPECT_SCRIPT="
+set timeout 2
 spawn mysql -u root -p
 expect \"Enter password:\"
 send \"$PASS_MYSQL_ROOT\r\"
-expect \"mysql>\"
-send \"GRANT ALL ON *.* TO 'admin'@'localhost' IDENTIFIED BY '$PASS_MYSQL_ADMIN' WITH GRANT OPTION;\"
-expect \"mysql>\"
-send \"GRANT ALL ON *.* TO 'admin'@'127.0.0.1' IDENTIFIED BY '$PASS_MYSQL_ADMIN' WITH GRANT OPTION;\"
-expect \"mysql>\"
-send \"FLUSH PRIVILEGES;\"
-expect \"mysql>\"
+expect \"MariaDB \\[(none)\\]>\"
+send \"GRANT ALL ON *.* TO 'default'@'localhost' IDENTIFIED BY '$PASS_MYSQL_DEFAULT' WITH GRANT OPTION;\r\"
+expect \"MariaDB \\[(none)\\]>\"
+send \"GRANT ALL ON *.* TO 'default'@'127.0.0.1' IDENTIFIED BY '$PASS_MYSQL_DEFAULT' WITH GRANT OPTION;\r\"
+expect \"MariaDB \\[(none)\\]>\"
+send \"FLUSH PRIVILEGES;\r\"
+expect \"MariaDB \\[(none)\\]>\"
 send \"exit\r\"
-expect eof
-")
+expect eof"
 
         # execute mysql commands
-        ubwsl_echo "=> Creating a mysql \"admin\" user"
-        echo "${NEW_MYSQL_USER}"
+        ubwsl_echo info "Creating a new Mysql \"default\" user"
+        ubwsl_echo warning "Do not type anything, the installer will do it for you!"
+        echo "${EXPECT_SCRIPT}" | expect
 
         # save both passwords to /home/$USERNAME/.mysql-pass
-        ubwsl_echo "=> Saving mysql passwords to /home/$USERNAME/.mysql-pass"
-        ubwsl_echo "=> Your mysql root password is: $PASS_MYSQL_ROOT"
-        ubwsl_echo "=> Your mysql admin password is: $PASS_MYSQL_ADMIN"
+        ubwsl_echo headsup "Saving mysql passwords to /home/$USERNAME/.mysql-pass"
+        ubwsl_echo success "Your mysql \"root\" user's password is: $PASS_MYSQL_ROOT"
+        ubwsl_echo success "Your mysql \"default\" user's password is: $PASS_MYSQL_DEFAULT"
         echo "root:$PASS_MYSQL_ROOT" >/home/$USERNAME/.mysql-pass
-        echo "admin:$PASS_MYSQL_ADMIN" >>/home/$USERNAME/.mysql-pass
+        echo "default:$PASS_MYSQL_DEFAULT" >>/home/$USERNAME/.mysql-pass
         chown $USERNAME:$USERNAME /home/$USERNAME/.mysql-pass
         chmod 600 /home/$USERNAME/.mysql-pass
 
         # modify /etc/apache2/envvars so that APACHE_RUN_USER=$USERNAME and APACHE_RUN_GROUP=$USERNAME
-        ubwsl_echo "=> Modifying /etc/apache2/envvars"
+        ubwsl_echo info "Modifying /etc/apache2/envvars"
         sudo sed -i "s/APACHE_RUN_USER=www-data/APACHE_RUN_USER=$USERNAME/g" /etc/apache2/envvars
         sudo sed -i "s/APACHE_RUN_GROUP=www-data/APACHE_RUN_GROUP=$USERNAME/g" /etc/apache2/envvars
 
         # modify /etc/apache2/ports.conf so that Listen 80 is Listen 127.0.0.1:80 and Listen 443 is Listen 127.0.0.1:443
-        ubwsl_echo "=> Modifying /etc/apache2/ports.conf"
+        ubwsl_echo info "Modifying /etc/apache2/ports.conf"
         sudo sed -i "s/Listen 80/Listen 127.0.0.1:80/g" /etc/apache2/ports.conf
         sudo sed -i "s/Listen 443/Listen 127.0.0.1:443/g" /etc/apache2/ports.conf
 
         # create a new /etc/mysql/mariadb.conf.d/99-custom.cnf file
-        ubwsl_echo "=> Creating a new /etc/mysql/mariadb.conf.d/99-custom.cnf file"
-        read -r -d '' MYSQL_CONFIG <<-'EOF'
+        ubwsl_echo info "Creating a new /etc/mysql/mariadb.conf.d/99-custom.cnf file"
+        MYSQL_CONFIG=$(
+            cat <<EOF
 [mysqld]
 
 bind-address = 127.0.0.1
@@ -297,38 +384,39 @@ quick
 quote_names
 max_allowed_packet              = 1024M
 EOF
+        )
 
-        sudo echo "$MYSQL_CONFIG" >/etc/mysql/mariadb.conf.d/99-custom.cnf
+        echo "$MYSQL_CONFIG" | sudo tee /etc/mysql/mariadb.conf.d/99-custom.cnf >/dev/null
 
         # restart services
-        ubwsl_echo "=> Restarting Apache and Mysql services"
+        ubwsl_echo info "Restarting Apache and Mysql services"
         sudo systemctl restart apache2.service
         sudo systemctl restart mariadb.service
 
         # create the /etc/apache2/certs-selfsigned/ directory
-        ubwsl_echo "=> Creating the /etc/apache2/certs-selfsigned/ directory"
+        ubwsl_echo info "Creating the /etc/apache2/certs-selfsigned/ directory"
         sudo mkdir -p /etc/apache2/certs-selfsigned/
 
         # create the utils folder
-        ubwsl_echo "=> Creating the ~/utils/ folder"
+        ubwsl_echo info "Creating the ~/utils/ folder"
         cd ~/ && mkdir utils && cd utils/
 
         # download the "create-test-environment.php" script
-        ubwsl_echo "=> Downloading the create-test-environment.php script"
+        ubwsl_echo info "Downloading the create-test-environment.php script"
         TEMPFILE=$(mktemp)
         ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/create-test-environment.php" -o "$TEMPFILE"
         sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
         mv "$TEMPFILE" ~/utils/create-test-environment.php
 
         # download the "delete-test-environment.php" script
-        ubwsl_echo "=> Downloading the delete-test-environment.php script"
+        ubwsl_echo info "Downloading the delete-test-environment.php script"
         TEMPFILE=$(mktemp)
         ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/delete-test-environment.php" -o "$TEMPFILE"
         sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
         mv "$TEMPFILE" ~/utils/delete-test-environment.php
 
         # download the "create-selfsigned-ssl-cert.sh" script
-        ubwsl_echo "=> Downloading the create-selfsigned-ssl-cert.sh script"
+        ubwsl_echo info "Downloading the create-selfsigned-ssl-cert.sh script"
         TEMPFILE=$(mktemp)
         ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/create-selfsigned-ssl-cert.sh" -o "$TEMPFILE"
         sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
@@ -336,13 +424,14 @@ EOF
         chmod +x ~/utils/create-selfsigned-ssl-cert.sh
 
         # initialize Composer setup
-        ubwsl_echo "=> Initializing Composer stuff in ~/utils/.composer"
+        ubwsl_echo info "Initializing Composer stuff in ~/utils/.composer"
         mkdir -p ~/utils/.composer && cd ~/utils/.composer
         wget -O composer.phar https://getcomposer.org/download/latest-stable/composer.phar && chmod +x composer.phar
         wget -O composer-oldstable.phar https://getcomposer.org/download/latest-1.x/composer.phar && chmod +x composer-oldstable.phar
 
         # create the composer.json config file
-        read -r -d '' COMPOSER_CONFIG <<-'EOF'
+        COMPOSER_CONFIG=$(
+            cat <<EOF
 {
 	"require": {
 		"squizlabs/php_codesniffer": "^3.5",
@@ -350,38 +439,70 @@ EOF
 	}
 }
 EOF
+        )
 
-        echo "$COMPOSER_CONFIG" >composer.json
+        echo "$COMPOSER_CONFIG" >~/utils/.composer/composer.json
 
         # install composer dependencies
-        php -d allow_url_fopen=1 -d memory_limit=-1 composer.phar install
+        php -d allow_url_fopen=1 -d memory_limit=-1 ~/utils/.composer/composer.phar install
 
         # create the .ssh folder and generate a secure ssh key
-        ubwsl_echo "=> Creating the ~/.ssh/ folder and generating a secure ssh key"
-        mkdir -p ~/.ssh
-        # we need to use "expect" to generate the key, because "ssh-keygen" will ask for a password.
-        # afterwards, we're going to call ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "$USERNAME@$MACHINENAME"
+        ubwsl_echo info "Creating the ~/.ssh/ folder and generating a secure ssh key"
+        mkdir -p ~/.ssh && cd ~/.ssh
 
         # create the expect script
-        read -r -d '' EXPECT_SCRIPT <<-'EOF'
-spawn ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "##USERNAME##@##MACHINENAME##"
-expect "Enter passphrase (empty for no passphrase):"
+        EXPECT_SCRIPT="
+set timeout 2
+spawn ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "$USERNAME@$MACHINENAME"
+expect \"Enter passphrase (empty for no passphrase):\"
 send "\r"
-expect "Enter same passphrase again:"
+expect \"Enter same passphrase again:\"
 send "\r"
-expect eof
-EOF
-
-        # replace the placeholders with the actual values
-        EXPECT_SCRIPT=$(echo "$EXPECT_SCRIPT" | sed "s/##USERNAME##/$USERNAME/g")
-        EXPECT_SCRIPT=$(echo "$EXPECT_SCRIPT" | sed "s/##MACHINENAME##/$MACHINENAME/g")
+expect eof"
 
         # execute the expect script
-        echo "$EXPECT_SCRIPT" | expect
+        echo "${EXPECT_SCRIPT}" | expect
 
-        # create the .bash_local file with some useful aliases
-        ubwsl_echo "=> Creating the ~/.bash_local file with some useful aliases"
-        read -r -d '' BASHLOCAL_FILE <<-'EOF'
+        # ask the user if he wants to automatically set up https://github.com/slomkowski/bash-full-of-colors
+        ubwsl_echo question "Do you want to automatically set up the Bash Env, NVM and Aliases? (y/n)"
+        read -p "[y/n]: " -n 1 -r
+        ubwsl_echo
+
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # install the Bash Env, NVM and Aliases
+            ubwsl_echo info "Installing the Bash Env"
+            cd ~/
+            git clone https://github.com/slomkowski/bash-full-of-colors.git .bash-full-of-colors
+            [ -f .bashrc ] && mv -v .bashrc bashrc.old
+            [ -f .bash_profile ] && mv -v .bash_profile bash_profile.old
+            [ -f .bash_aliases ] && mv -v .bash_aliases bash_aliases.old
+            [ -f .bash_logout ] && mv -v .bash_logout bash_logout.old
+            ln -s .bash-full-of-colors/bashrc.sh .bashrc
+            ln -s .bash-full-of-colors/bash_profile.sh .bash_profile
+            ln -s .bash-full-of-colors/bash_aliases.sh .bash_aliases
+            ln -s .bash-full-of-colors/bash_logout.sh .bash_logout
+            rm -f bash_logout.old
+            rm -f bashrc.old
+            rm -f bash_aliases.old
+
+            # install NVM
+            ubwsl_echo info "Installing NVM"
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+            source ~/.bashrc
+
+            # install NodeJS
+            ubwsl_echo info "Installing NodeJS"
+            nvm install --lts
+
+            # install Yarn
+            ubwsl_echo info "Installing Yarn"
+            npm install -g yarn
+
+            # install the Aliases
+            # create the .bash_local file with some useful aliases
+            ubwsl_echo info "Creating the ~/.bash_local file with some useful aliases"
+            BASHLOCAL_FILE=$(
+                cat <<EOF
 alias testenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/create-test-environment.php"
 alias removetestenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/delete-test-environment.php"
 alias updatecomposer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar self-update && /usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar self-update"
@@ -416,8 +537,15 @@ alias .5="cd ../../../../.."
 alias ports="sudo netstat -tulanp"
 alias wslrestart="history -a && cmd.exe /C wsl --shutdown"
 EOF
+            )
 
-        echo "$BASHLOCAL_FILE" >~/.bash_local
+            echo "$BASHLOCAL_FILE" >~/.bash_local
+            source ~/.bash_local
+
+        fi
+
+        # echo the footer of the script
+        ubwsl_echo success "Installation completed! You can now start using your new LAMP stack!"
 
         ubwsl_reset
     }

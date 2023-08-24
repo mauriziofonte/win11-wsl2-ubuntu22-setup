@@ -55,7 +55,7 @@ Remove-Item -Path "HKCU:\Software\WSL2Setup" -Force -ErrorAction SilentlyContinu
 
 ## Mantainers
 
-Currently, the sole maintainer is @mauriziofonte - more maintainers are quite welcome, as the guides are lenghty, and the automated installer is quite complex and difficult to debug without having to create & destroy WSL instances every time.
+Currently, the sole maintainer is @mauriziofonte - more maintainers are quite welcome, as the guides are lenghty, and the automated installer is quite complex!
 
 ## License
 

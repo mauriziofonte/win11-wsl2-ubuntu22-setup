@@ -25,7 +25,7 @@ message('### TEST ENVIRONMENT DELETER ###');
 $work = true;
 while ($work) {
     message('Enter a valid local Domain Name you previously configured on this Machine (e.g. mydomain.test).');
-    $domain = readline('Type the Domain Name: ');
+    $domain = readline('  Type the Domain Name: ');
     $domain = strtolower(str_replace(['http://', 'https://', 'www.'], '', $domain));
     if (filter_var('http://' . $domain, FILTER_VALIDATE_URL)) {
         $work = false;
@@ -96,8 +96,9 @@ function searchForAppliableApacheConf(string $domain) : ?string
 {
     $files = scandir(APACHE_SITES_AVAILABLE_DIR);
     foreach ($files as $file) {
-        // read the file, and, if it contains the domain, return the file name
-        if (strpos(file_get_contents(APACHE_SITES_AVAILABLE_DIR . $file), $domain) !== false) {
+        // read the file, and, if it contains the literal string "ServerName $domain" and "ServerAlias www.$domain", return the full file name
+        $contents = file_get_contents(APACHE_SITES_AVAILABLE_DIR . $file);
+        if (strpos($contents, "ServerName $domain") !== false && strpos($contents, "ServerAlias www.$domain") !== false) {
             return $file;
         }
     }
@@ -108,19 +109,20 @@ function searchForAppliableApacheConf(string $domain) : ?string
 function searchForAppliablePhpFpmConf(string $domain) : ?array
 {
     // only search inside PHP_CONFIG_DIR/*/fpm/pool.d/
-    $files = scandir(PHP_CONFIG_DIR);
+    $folders = scandir(PHP_CONFIG_DIR);
 
-    foreach ($files as $file) {
-        if($file === '.' || $file === '..') {
+    foreach ($folders as $phpversion) {
+        if ($phpversion === '.' || $phpversion === '..' || is_file(PHP_CONFIG_DIR . $phpversion))
             continue;
         }
 
-        if(is_dir(PHP_CONFIG_DIR . $file . '/fpm/pool.d/')) {
-            $files2 = scandir(PHP_CONFIG_DIR . $file . '/fpm/pool.d/');
-            foreach ($files2 as $file2) {
-                // read the file, and, if it contains the domain, return the file name
-                if (strpos(file_get_contents(PHP_CONFIG_DIR . $file . '/fpm/pool.d/' . $file2), $domain) !== false) {
-                    return [$file, $file2];
+        if (is_dir(PHP_CONFIG_DIR . "{$phpversion}/fpm/pool.d/")) {
+            $confs = scandir(PHP_CONFIG_DIR . "{$phpversion}/fpm/pool.d/");
+            foreach ($confs as $conf) {
+                // read the conf, and, if it contains the literal string [$domain], return the file name
+                $contents = file_get_contents(PHP_CONFIG_DIR . "{$phpversion}/fpm/pool.d/{$conf}");
+                if (strpos($contents, "[$domain]") !== false) {
+                    return [$phpversion, "{$phpversion}/fpm/pool.d/{$conf}"];
                 }
             }
         }
