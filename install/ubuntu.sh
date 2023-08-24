@@ -391,6 +391,7 @@ expect eof"
 
         # ask the user if he wants to automatically set up https://github.com/slomkowski/bash-full-of-colors
         ubwsl_echo question "Do you want to automatically set up the Bash Env, NVM and Aliases? (y/n)"
+        ubwsl_echo
         read -p "[y/n]: " -n 1 -r
         ubwsl_echo
 
