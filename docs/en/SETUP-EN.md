@@ -438,8 +438,9 @@ To optimize the LAMP installation and the user experience on the Linux command c
 3. The `composer` command (by default, version 2) has been declined in various _flavors_ corresponding to the target PHP versions installed on the system. In summary, the `composer` command will use **PHP 8.2**, `composer81` will use **PHP 8.1**, `composer80` will use **PHP 8.0**, and so on down to `composer72` that will use **PHP 7.2**. If you wish to use the **old and deprecated Composer 1** for developing on really old projects, just use `1composer72`, or `1composer71`, or `1composer70`, or `1composer56`: these aliases will use the PHP versions accordingly.
 4. Similarly to what is reported above, the PHP _CLI_ is also subject to Aliasing, as we have installed several versions of PHP during the setup. So, if you want to use a PHP CLI of a specific version, just type `php` for version **8.2**, `php81` for version **8.1**, `php80` for version **8.0**, and so on down to `php56` for version **5.6**.
 5. It is possible to keep the _Composer_ _binaries_ updated with the alias `updatecomposer`.
-6. You can **create test/staging environments** with the alias `testenv`. The alias will take care of calling the script `create-test-environment.php`.
-7. You can **REMOVE previously created test/staging environments** with the alias `removetestenv`. The alias will take care of calling the script `delete-test-environment.php`.
+6. You can **create test/staging environments** with the alias `create-test-env`. The alias will take care of calling the script `~/utils/create-test-environment.php`.
+7. You can **REMOVE previously created test/staging environments** with the alias `remove-test-env`. The alias will take care of calling the script `~/utils/delete-test-environment.php`.
+8. You can **LIST** test/staging environments created with `create-test-env` with the alias `list-test-envs`. The alias will take care of calling the script `~/utils/list-test-environments.php`.
 
 ## Step 5 - Install VS Code to Access Project Files on WSL2
 

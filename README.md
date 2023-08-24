@@ -17,7 +17,7 @@ During my years of on-field experience, I've created _my own workflow_ that allo
 If you want to automatically install everything, open a `PowerShell` window with **elevated privileges** (_Run ad Admin_)
 
 ```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; $desktopPath = [Environment]::GetFolderPath('Desktop'); $url = 'https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/install/win11.ps1'; $outputPath = Join-Path -Path $desktopPath -ChildPath 'install-ubuntu22-wsl2.ps1'; (New-Object System.Net.WebClient).DownloadFile($url, $outputPath); & $outputPath
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; $desktopPath = [Environment]::GetFolderPath('Desktop'); $url = 'https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/win11.ps1'; $outputPath = Join-Path -Path $desktopPath -ChildPath 'install-ubuntu22-wsl2.ps1'; (New-Object System.Net.WebClient).DownloadFile($url, $outputPath); & $outputPath
 ```
 
 The automated installer will:

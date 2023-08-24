@@ -1,6 +1,6 @@
 # Setup manuale stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 22.04 (senza Microsoft Store)
 
-> Versione 
+> Versione
 > Ultimo aggiornamento: _23/08/2023_. Versione target Ubuntu: 22.04.03
 
 Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 22.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_) e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
@@ -214,7 +214,7 @@ DIGITARE "YOUR-ROOT-PASS"
 
 Eseguiti questi comandi, saranno installati tutti i servizi e gli eseguibili necessari per realizzare uno stack LAMP (Linux, Apache, Mysql, PHP) in modalità multi-PHP (multiple versioni di PHP) con PHP-FPM per incrementare le performance.
 
-> Nota: le query mysql relative allo **username e password** (_admin_ e _YOUR-ADMIN-PASS_) da creare come utente privilegiato possono essere modificate a piacimento. 
+> Nota: le query mysql relative allo **username e password** (_admin_ e _YOUR-ADMIN-PASS_) da creare come utente privilegiato possono essere modificate a piacimento.
 > Nell'esempio sopra riportato viene creato un utente con username `admin` e password `YOUR-ADMIN-PASS`. C'è da dire che **stiamo configurando un ambiente di sviluppo locale**, e fintanto che questo ambiente non viene esposto in internet, non dobbiamo preoccuparci di usare policy particolari riguardanti i nomi utente e la complessità delle password.
 > Tuttavia, tengo a precisare che usare nomi utente "facilmente guessabili" e password "ben note" è una **bad practice**.
 
@@ -410,7 +410,7 @@ Do you need HTTPS support?
   Type "yes", "no", "y" or "n": y
 ```
 
-Ora, bisogna modificare **il file hosts di Windows** per inserire il puntamento locale al dominio `local.phpmyadmin.test`. 
+Ora, bisogna modificare **il file hosts di Windows** per inserire il puntamento locale al dominio `local.phpmyadmin.test`.
 
 Per farlo, su Windows 11, avremo bisogno dei _PowerToys_. Per l'installazione, si rimanda [alla guida ufficiale di Microsoft](https://learn.microsoft.com/it-it/windows/powertoys/install).
 
@@ -446,8 +446,9 @@ Per ottimizzare l'installazione LAMP e l'esperienza utente sulla console dei com
 3. Il comando `composer` (di default, la versione 2) è stato declinato in svariati _flavour_ corrispondenti alle versioni target di PHP che sono installate sul sistema. In sintesi, il comando `composer` utilizzerà **PHP 8.2**, `composer81` utilizzerà **PHP 8.1**, `composer80` utilizzerà **PHP 8.0**, e così via fino a `composer72` che utilizzerà **PHP 7.2**. Se invece si desiderasse utilizzare il **vecchio e deprecato Composer 1** per sviluppare su progetti davvero datati, basterà usare `1composer72`, oppure `1composer71`, oppure `1composer70`, oppure `1composer56`. In questo caso, verrà usato dietro le quinte il _binario_ `composer-oldstable.phar` precedentemente scaricato
 4. Similarmente a quanto sopra riportato, anche la _CLI_ di PHP è soggetta ad Aliasing, in quanto abbiamo installato svariate versioni di PHP durante il setup. Quindi, se si desidera utilizzare una CLI di PHP di una versione specifica, basterà digitare `php` per la versione **8.2**, `php81` per la versione **8.1**, `php80` per la versione **8.0**, e così via fino a `php56` per la versione **5.6**
 5. E' possibile mantenere aggiornati i _binari_ di _Composer_ con l'alias `updatecomposer`
-6. E' possibile **creare gli ambienti di test/staging** con l'alias `testenv`. L'alias si occuperà di richiamare lo script `create-test-environment.php`
-7. E' possibile **RIMUOVERE gli ambienti di test/staging** creati precedentemente con l'alias `removetestenv`. L'alias si occuperà di richiamare lo script `delete-test-environment.php`
+6. E' possibile **creare gli ambienti di test/staging** con l'alias `create-test-env`. L'alias si occuperà di richiamare lo script `~/utils/create-test-environment.php`
+7. E' possibile **RIMUOVERE gli ambienti di test/staging** creati precedentemente con l'alias `remove-test-env`. L'alias si occuperà di richiamare lo script `~/utils/delete-test-environment.php`
+8. E' possibile **listare** ambienti di test/staging creati precedentemente con l'alias `list-test-envs`. L'alias si occuperà di richiamare lo script `~/utils/list-test-environments.php`
 
 ## Step 5 - Installare VS Code per accedere ai file di progetto su WSL2
 

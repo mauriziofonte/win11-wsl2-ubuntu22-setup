@@ -1,5 +1,6 @@
-alias testenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/create-test-environment.php"
-alias removetestenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/delete-test-environment.php"
+alias create-test-env="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/create-test-environment.php"
+alias remove-test-env="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/delete-test-environment.php"
+alias list-test-envs="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/list-test-environments.php"
 alias updatecomposer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar self-update && /usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar self-update"
 alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"

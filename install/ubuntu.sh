@@ -263,27 +263,20 @@ EOF
         ubwsl_echo "Creating the ~/utils/ folder"
         cd ~/ && mkdir utils && cd utils/
 
-        # download the "create-test-environment.php" script
-        ubwsl_echo "Downloading the create-test-environment.php script"
-        TEMPFILE=$(mktemp)
-        ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/create-test-environment.php" -o "$TEMPFILE"
-        sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
-        mv "$TEMPFILE" ~/utils/create-test-environment.php
+        declare -a utilscripts=("create-test-environment.php" "delete-test-environment.php" "list-test-environments.php" "create-selfsigned-ssl-cert.sh")
 
-        # download the "delete-test-environment.php" script
-        ubwsl_echo "Downloading the delete-test-environment.php script"
-        TEMPFILE=$(mktemp)
-        ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/delete-test-environment.php" -o "$TEMPFILE"
-        sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
-        mv "$TEMPFILE" ~/utils/delete-test-environment.php
+        for script in "${utilscripts[@]}"; do
+            ubwsl_echo "Downloading \"$script\" util script"
+            TEMPFILE=$(mktemp)
+            ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/scripts/$script" -o "$TEMPFILE"
+            sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
+            mv "$TEMPFILE" ~/utils/$script
 
-        # download the "create-selfsigned-ssl-cert.sh" script
-        ubwsl_echo "Downloading the create-selfsigned-ssl-cert.sh script"
-        TEMPFILE=$(mktemp)
-        ubwsl_download -s "https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-guide/main/scripts/create-selfsigned-ssl-cert.sh" -o "$TEMPFILE"
-        sed -i "s/##LINUX_USERNAME##/$USERNAME/g" "$TEMPFILE"
-        mv "$TEMPFILE" ~/utils/create-selfsigned-ssl-cert.sh
-        chmod +x ~/utils/create-selfsigned-ssl-cert.sh
+            # Make the script executable if it has a .sh extension
+            if [[ $script == *.sh ]]; then
+                chmod +x ~/utils/$script
+            fi
+        done
 
         # initialize Composer setup
         ubwsl_echo "Initializing Composer stuff in ~/utils/.composer"
@@ -324,6 +317,7 @@ expect eof"
         echo "${EXPECT_SCRIPT}" | expect
 
         # ask the user if he wants to automatically set up https://github.com/slomkowski/bash-full-of-colors
+        ubwsl_echo
         read -p "Do you want to automatically set up the Bash Env, NVM and Aliases? (y/n): " -n 1 -r </dev/tty
         ubwsl_echo
 
@@ -364,8 +358,9 @@ expect eof"
             ubwsl_echo "Creating the ~/.bash_local file with some useful aliases"
             BASHLOCAL_FILE=$(
                 cat <<EOF
-alias testenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/create-test-environment.php"
-alias removetestenv="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/delete-test-environment.php"
+alias create-test-env="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/create-test-environment.php"
+alias remove-test-env="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/delete-test-environment.php"
+alias list-test-envs="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/list-test-environments.php"
 alias updatecomposer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar self-update && /usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer-oldstable.phar self-update"
 alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M ~/utils/.composer/composer.phar"
