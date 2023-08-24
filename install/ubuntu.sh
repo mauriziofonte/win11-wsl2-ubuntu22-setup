@@ -202,12 +202,11 @@
 
         # ask for the sudo password, we'll need it later
         ubwsl_echo question "We're going to ask you again for the sudo password (we'll need it later):"
-        PASS_MYSQL_ROOT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
         read -s -p "[sudo] password for $USERNAME: " SUDO_PASSWORD
         ubwsl_echo
 
         # modify the APT config so that we are more lax on retries and timeouts
-        echo -e "Acquire::Retries \"100\";\nAcquire::https::Timeout \"240\";\nAcquire::http::Timeout \"240\";\nDebug::Acquire::https \"true\";\n" | sudo tee /etc/apt/apt.conf.d/99-custom.conf >/dev/null
+        echo -e "Acquire::Retries \"50\";\nAcquire::https::Timeout \"240\";\nAcquire::http::Timeout \"240\";\n" | sudo tee /etc/apt/apt.conf.d/99-custom.conf >/dev/null
 
         # alias the apt command
         alias apt='sudo apt-get --assume-yes'
