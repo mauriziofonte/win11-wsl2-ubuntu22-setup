@@ -96,6 +96,10 @@ function searchForAppliableApacheConf(string $domain) : ?string
 {
     $files = scandir(APACHE_SITES_AVAILABLE_DIR);
     foreach ($files as $file) {
+        if ($file === '.' || $file === '..' || !is_file(APACHE_SITES_AVAILABLE_DIR . $file)) {
+            continue;
+        }
+
         // read the file, and, if it contains the literal string "ServerName $domain" and "ServerAlias www.$domain", return the full file name
         $contents = file_get_contents(APACHE_SITES_AVAILABLE_DIR . $file);
         if (strpos($contents, "ServerName $domain") !== false && strpos($contents, "ServerAlias www.$domain") !== false) {
