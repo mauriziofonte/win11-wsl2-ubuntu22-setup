@@ -112,7 +112,7 @@ function searchForAppliablePhpFpmConf(string $domain) : ?array
     $folders = scandir(PHP_CONFIG_DIR);
 
     foreach ($folders as $phpversion) {
-        if ($phpversion === '.' || $phpversion === '..' || is_file(PHP_CONFIG_DIR . $phpversion))
+        if ($phpversion === '.' || $phpversion === '..' || is_file(PHP_CONFIG_DIR . $phpversion)) {
             continue;
         }
 

@@ -17,7 +17,7 @@ if (!is_dir('/etc/apache2/certs-selfsigned/')) {
 
 define('APACHE_SITES_AVAILABLE_DIR', '/etc/apache2/sites-available/');
 define('APACHE_CERTS_DIR', '/etc/apache2/certs-selfsigned/');
-define('APACHE_CERT_SELFSIGNED_SCRIPT', './create-selfsigned-ssl-cert.sh');
+define('APACHE_CERT_SELFSIGNED_SCRIPT', '/home/##LINUX_USERNAME##/utils/create-selfsigned-ssl-cert.sh');
 define('PHP_FPM_CONFIG_DIR', '/etc/php/#VER#/fpm/pool.d/');
 define('APACHE_MAX_CONF_INDEX', getApacheSitesAvailableMaxIndex());
 

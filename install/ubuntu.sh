@@ -12,7 +12,7 @@
 
     if [ -z "${BASH_VERSION}" ] || [ -n "${ZSH_VERSION}" ]; then
         # shellcheck disable=SC2016
-        ubwsl_echo 'Error: the install instructions explicitly say to pipe the install script to `bash`; please follow them'
+        ubwsl_echo >&2 'Error: the install instructions explicitly say to pipe the install script to `bash`; please follow them'
         exit 1
     fi
 
@@ -324,8 +324,7 @@ expect eof"
         echo "${EXPECT_SCRIPT}" | expect
 
         # ask the user if he wants to automatically set up https://github.com/slomkowski/bash-full-of-colors
-        ubwsl_echo "Do you want to automatically set up the Bash Env, NVM and Aliases? (y/n)"
-        read -p "[y/n]: " -n 1 -r </dev/tty
+        read -p "Do you want to automatically set up the Bash Env, NVM and Aliases? (y/n): " -n 1 -r </dev/tty
         ubwsl_echo
 
         if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -401,7 +400,8 @@ EOF
 
             echo "$BASHLOCAL_FILE" >~/.bash_local
             source ~/.bash_local
-
+        else
+            ubwsl_echo "Skipping the Bash Env, NVM and Aliases setup"
         fi
 
         # echo the footer of the script
