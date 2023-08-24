@@ -1,6 +1,6 @@
 # Setup a LAMP Stack on Windows 11, with WSL2, Ubuntu 22.04, native systemd Services and VS Code optimizations
 
-This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP Stack_ that is targeted on Windows 11, with WSL2 and **Ubuntu 22.04**, with a _LAMP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
+This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP Stack_ that is targeted on Windows 11 (and 10, see below), with _WSL2_ and **Ubuntu 22.04**, with a _LAMP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
 
 ## Why use Win11 in the first place, and why native systemd services instead of containers?
 
@@ -12,7 +12,11 @@ During my years of on-field experience, I've created _my own workflow_ that allo
 
 ## Installation instructions
 
-> Automated Install
+Installation instructions are the same for both **Windows 11** and **Windows 10**.
+
+Specifically, For _Windows 10_, it is _required_ to have a minimum version 1903, and build 18362 or later. Check your Windows version by pressing the Windows logo key + R, type `winver`, and press OK. You should see a number greater than _1903.18362_. If that's the case, then this script will work (tested!)
+
+### Automated Install
 
 If you want to automatically install everything, open a `PowerShell` window with **elevated privileges** (_Run ad Admin_)
 
@@ -32,7 +36,7 @@ Tips:
 1. If you want to run the automated install on **Windows 10** (not tested!), just append `-SkipWindowsVersionCheck` at the end of the one-liner install
 2. If you want to test a **Dry Run** of the script (no modifications made to your PC), just append `-DryRun` at the end of the one-liner install
 
-> Manual Install
+### Manual Install
 
 Manual installation instuctions are provided in two languages:
 

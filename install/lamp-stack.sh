@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+# This script installs a LAMP stack on Ubuntu 22.04 LTS (Jammy Jellyfish)
+# with Apache + PHP + Redis + MySQL and multi-PHP versions support
+# Apache will be configured to work with PHP-FPM
+#
+# Author: Maurizio Fonte (https://www.mauriziofonte.it)
+# Version: 1.0.0
+# Release Date: 2023-08-24
+# License: MIT License
+#
+# If you find any issue, please report it on GitHub: https://github.com/mauriziofonte/win11-wsl2-ubuntu22-setup/issues
+#
+
 { # this ensures the entire script is downloaded #
 
     ubwsl_has() {
