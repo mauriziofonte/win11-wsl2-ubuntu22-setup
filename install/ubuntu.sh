@@ -68,7 +68,7 @@
 
         # ask for the sudo password, we'll need it later
         ubwsl_echo "We're going to ask you again for the sudo password (we'll need it later):"
-        read -s -p "[sudo] password for $USERNAME: " SUDO_PASSWORD
+        read -s -p "[sudo] password for $USERNAME: " SUDO_PASSWORD </dev/tty
         ubwsl_echo
 
         # modify the APT config so that we are more lax on retries and timeouts
@@ -327,7 +327,7 @@ expect eof"
 
         # ask the user if he wants to automatically set up https://github.com/slomkowski/bash-full-of-colors
         ubwsl_echo "Do you want to automatically set up the Bash Env, NVM and Aliases? (y/n)"
-        read -p "[y/n]: " -n 1 -r
+        read -p "[y/n]: " -n 1 -r </dev/tty
         ubwsl_echo
 
         if [[ $REPLY =~ ^[Yy]$ ]]; then
