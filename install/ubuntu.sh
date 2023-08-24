@@ -79,23 +79,6 @@
         exit 1
     fi
 
-    ubwsl_grep() {
-        GREP_OPTIONS='' command grep "$@"
-    }
-
-    ubwsl_profile_is_bash_or_zsh() {
-        local TEST_PROFILE
-        TEST_PROFILE="${1-}"
-        case "${TEST_PROFILE-}" in
-        *"/.bashrc" | *"/.bash_profile" | *"/.zshrc" | *"/.zprofile")
-            return
-            ;;
-        *)
-            return 1
-            ;;
-        esac
-    }
-
     ubwsl_download() {
         if ubwsl_has "curl"; then
             curl --fail --compressed -q "$@"
@@ -112,60 +95,6 @@
                 -e 's/-C - /-c /')
             # shellcheck disable=SC2086
             eval wget $ARGS
-        fi
-    }
-
-    ubwsl_try_profile() {
-        if [ -z "${1-}" ] || [ ! -f "${1}" ]; then
-            return 1
-        fi
-        ubwsl_echo "${1}"
-    }
-
-    #
-    # Detect profile file if not specified as environment variable
-    # (eg: PROFILE=~/.myprofile)
-    # The echo'ed path is guaranteed to be an existing file
-    # Otherwise, an empty string is returned
-    #
-    ubwsl_detect_profile() {
-        if [ "${PROFILE-}" = '/dev/null' ]; then
-            # the user has specifically requested NOT to have nvm touch their profile
-            return
-        fi
-
-        if [ -n "${PROFILE}" ] && [ -f "${PROFILE}" ]; then
-            ubwsl_echo "${PROFILE}"
-            return
-        fi
-
-        local DETECTED_PROFILE
-        DETECTED_PROFILE=''
-
-        if [ "${SHELL#*bash}" != "$SHELL" ]; then
-            if [ -f "$HOME/.bashrc" ]; then
-                DETECTED_PROFILE="$HOME/.bashrc"
-            elif [ -f "$HOME/.bash_profile" ]; then
-                DETECTED_PROFILE="$HOME/.bash_profile"
-            fi
-        elif [ "${SHELL#*zsh}" != "$SHELL" ]; then
-            if [ -f "$HOME/.zshrc" ]; then
-                DETECTED_PROFILE="$HOME/.zshrc"
-            elif [ -f "$HOME/.zprofile" ]; then
-                DETECTED_PROFILE="$HOME/.zprofile"
-            fi
-        fi
-
-        if [ -z "$DETECTED_PROFILE" ]; then
-            for EACH_PROFILE in ".profile" ".bashrc" ".bash_profile" ".zprofile" ".zshrc"; do
-                if DETECTED_PROFILE="$(ubwsl_try_profile "${HOME}/${EACH_PROFILE}")"; then
-                    break
-                fi
-            done
-        fi
-
-        if [ -n "$DETECTED_PROFILE" ]; then
-            ubwsl_echo "$DETECTED_PROFILE"
         fi
     }
 
@@ -202,6 +131,7 @@
 
         # ask for the sudo password, we'll need it later
         ubwsl_echo question "We're going to ask you again for the sudo password (we'll need it later):"
+        ubwsl_echo
         read -s -p "[sudo] password for $USERNAME: " SUDO_PASSWORD
         ubwsl_echo
 
@@ -550,7 +480,7 @@ EOF
     # Unsets the various functions defined
     # during the execution of the install script
     ubwsl_reset() {
-        unset -f ubwsl_has ubwsl_echo ubwsl_grep ubwsl_profile_is_bash_or_zsh ubwsl_download ubwsl_try_profile ubwsl_detect_profile ubwsl_do_install ubwsl_reset
+        unset -f ubwsl_has ubwsl_echo ubwsl_download ubwsl_do_install ubwsl_reset
     }
 
     #
