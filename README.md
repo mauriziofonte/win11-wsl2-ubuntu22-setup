@@ -14,7 +14,7 @@ During my years of on-field experience, I've created _my own workflow_ that allo
 
 The _LAMP Stack_ will be configured in this way:
 
-1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.3_ (_Note: PHP 8.3 is still in beta, and is set to be released on November 23, 2023_)
+1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.2_ (_Note: PHP 8.3 is still in beta, and is set to be released on November 23, 2023._)
 2. Use the `ppa:ondrej/apache2` Apache repo
 3. Make _Apache Virtualhosts_ work via _PHP-FPM_ and enable the developer to use quick _deploy_ commands to setup a native local VirtualHost located in the Ubuntu machine
 4. Let the developer choose the target PHP version of the deployed VirtualHost ([see here](/docs/en/SETUP-EN.md#important-notes-on-aliases-enabled-via-bash_local))

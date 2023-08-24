@@ -93,7 +93,7 @@
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/php
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
-        PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+        PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
         APTPACKS=$(for VER in $PHPVERS; do
             echo -n "libapache2-mod-php$VER php$VER "

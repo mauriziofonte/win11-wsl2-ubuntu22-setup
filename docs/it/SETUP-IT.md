@@ -162,7 +162,7 @@ Dopodichè, riavviare la macchina Ubuntu.
 
 ## Step 1 - Configurare l'ambiente LAMP su Ubuntu
 
-Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 e 8.3. Abiliteremo anche il **web server Apache** e il server **Mysql**.
+Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1 e 8.2. Abiliteremo anche il **web server Apache** e il server **Mysql**.
 
 **Perchè installare tante versioni di PHP**? E' importante per due motivi:
 
@@ -181,7 +181,7 @@ apt install -y net-tools zip unzip git redis-server lsb-release ca-certificates 
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
 apt update && apt upgrade
-PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
 PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
 APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done; done)
 apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
@@ -406,7 +406,7 @@ Enter a valid local Domain Name (suggested .test TLD, as "jane.local.test")
   Type the Domain Name: local.phpmyadmin.test
 Enter a valid directory in the filesystem for the DocumentRoot
   Type the DocumentRoot: /home/maurizio/opt/phpmyadmin/
-Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 or 8.3)
+Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1 or 8.2)
   Type the PHP version: 8.2
 Do you need HTTPS support?
   Type "yes", "no", "y" or "n": y
