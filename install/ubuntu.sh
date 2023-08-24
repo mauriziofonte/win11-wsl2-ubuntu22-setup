@@ -106,7 +106,7 @@
 
         # create Root passwords for user "root" and "admin"
         PASS_MYSQL_ROOT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
-        PASS_MYSQL_ADMIN=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+        PASS_MYSQL_DEFAULT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
 
         # create the expect script for mysql_secure_installation
         EXPECT_SCRIPT="
@@ -317,8 +317,6 @@ EOF
 set timeout 2
 spawn ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/defaultkey -C "$USERNAME@$MACHINENAME"
 expect \"Enter passphrase (empty for no passphrase):\"
-send "\r"
-expect \"Enter same passphrase again:\"
 send "\r"
 expect eof"
 
