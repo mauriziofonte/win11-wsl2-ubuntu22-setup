@@ -479,8 +479,8 @@ Portarsi su una console di Ubuntu e lanciare questi comandi:
 ```json
 {
     "require": {
-        "squizlabs/php_codesniffer": "^3.5",
-        "friendsofphp/php-cs-fixer": "^2.16"
+        "squizlabs/php_codesniffer": "^3",
+        "friendsofphp/php-cs-fixer": "^3"
     }
 }
 ```
