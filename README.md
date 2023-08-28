@@ -43,7 +43,7 @@ The automated installer will:
 
 Tips:
 
-1. If you want to run the automated install on **Windows 10** (not tested!), just append `-SkipWindowsVersionCheck` at the end of the one-liner install
+1. If you want to run the automated install on **Windows 10**, just append `-SkipWindowsVersionCheck` at the end of the one-liner install
 2. If you want to test a **Dry Run** of the script (no modifications made to your PC), just append `-DryRun` at the end of the one-liner install
 
 ### Manual Install
