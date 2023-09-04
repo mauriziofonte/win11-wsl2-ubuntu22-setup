@@ -72,7 +72,7 @@
 	"git.enableSmartCommit": true,
 	"git.autofetch": true,
 	"git.confirmSync": false,
-	"php-cs-fixer.executablePath": "/home/##LINUX_USERNAME##/utils/.composer/vendor/bin/php-cs-fixer",
+	"php-cs-fixer.executablePath": "/home/##LINUX_USERNAME##/.config/composer/vendor/bin/php-cs-fixer",
 	"php-cs-fixer.executablePathWindows": "",
 	"php-cs-fixer.onsave": false,
 	"php-cs-fixer.rules": "@PSR2",

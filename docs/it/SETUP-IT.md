@@ -1,7 +1,6 @@
 # Setup manuale stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 22.04 (senza Microsoft Store)
 
-> Versione
-> Ultimo aggiornamento: _23/08/2023_. Versione target Ubuntu: 22.04.03
+> Ultimo aggiornamento: _04/09/2023_. Versione target Ubuntu: 22.04.03
 
 Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 22.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_) e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
 
@@ -360,32 +359,110 @@ systemctl restart apache2.service
 systemctl restart mariadb.service
 ```
 
-## Step 3 - Creare dei VirtualHost funzionanti sulla propria installazione locale
+## Step 3 - Configurare l'ambiente PHP con Composer e HTE-Cli
 
-Per creare dei `VirtualHost` è sufficiente utilizzare questi due script che velocizzano la configurazione.
+Adesso che abbiamo creato e configurato lo stack _LAMP_, non ce ne facciamo nulla se non creiamo dei _VirtualHost_ per svilupare o testare applicazioni web sulle diverse versioni di PHP installate sul sistema.
+
+Per creare dei `VirtualHost` utilizzeremo [HTE-Cli](https://github.com/mauriziofonte/hte-cli), un tool **di mia creazione** pensato per agevolare la configurazione di environment di test su nomi dominio fittizi via modifica del _file hosts di Windows_.
+
+Il tool _HTE-Cli_ si occuperà di **auto-configurare** quello che serve sulla base di alcune informazioni basilari per il progetto che vogliamo svlippare o testare.
+
+Inoltre, nel prosieguo del nostro lavoro avremo anche a che fare con `Composer`. In questa parte andremo a configurare Composer per sfruttarlo non solo per _HTE-Cli_, ma anche per _PHP Code Sniffer_ e _PHP CS Fixer_, che ci serviranno per lo sviluppo con _VS Code_.
+
+> **NOTA** : per saperne di più su `HTE-Cli`, [leggere il README dedicato di HTE-Cli](https://github.com/mauriziofonte/hte-cli/blob/main/README.md)
+
+### Installazione di Composer 2 e Composer 1
+
+Per installare l'ultima versione stabile (2.x) di `Composer` _globalmente_, eseguire questo comando:
+
+```bash
+wget -O composer.phar https://getcomposer.org/download/latest-stable/composer.phar && sudo mkdir -p /usr/local/bin && sudo mv composer.phar /usr/local/bin/composer && sudo chmod +x /usr/local/bin/composer
+```
+
+> **ATTENZIONE** : Composer 2 **non** è compatibile con versioni di PHP minori della `7.2.5`. Per usare Composer su progetti che richiedono PHP 7.2, 7.1, 7.0 o 5.6 sarà quindi necessario utilizzare il _vecchio_ binario di Composer 1
+
+Per installare l'ultima versione del _vecchio_ `Composer 1.x`, (compatibile su PHP 7.2, 7.1, 7.0 e 5.6), eseguire questo comando:
+
+```bash
+wget -O composer-oldstable.phar https://getcomposer.org/download/latest-1.x/composer.phar && sudo mkdir -p /usr/local/bin && sudo mv composer-oldstable.phar /usr/local/bin/composer1 && sudo chmod +x /usr/local/bin/composer1
+```
+
+> **NOTA** : per mantenere questi binari aggiornati, sarà sufficiente eseguire `sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update`
+
+### Installare il supporto per HTE-Cli, PHP Code Sniffer e PHP CS Fixer
+
+Per installare il supporto a questi tool, eseguire questi comandi:
+
+```bash
+composer global require --dev friendsofphp/php-cs-fixer
+composer global require --dev "squizlabs/php_codesniffer=*"
+composer global require "mfonte/hte-cli=*"
+echo 'export PATH="$(composer config -g home)/vendor/bin:$PATH"' >> ~/.bashrc
+```
+
+> **NOTA** : per mantenere questi pacchetti aggiornati, sarà sufficiente eseguire `composer global update`
+> **ATTENZIONE** : la directory di installazione dei pacchetti su **Ubuntu 22.04** sarà `~/.config/composer` e non `~/.composer` come ci si potrebbe aspettare: [qui la spiegazione](https://stackoverflow.com/a/38746307/1916292)
+
+### Configurare gli Alias Bash
+
+Ora che abbiamo installato tutto, non ci resta che creare dei _Bash Aliases_ che velocizzino il lavoro.
+
+Lanciare quindi `nano .bash_aliases` (oppure `vim .bash_aliases`) e incollare questi alias:
+
+```txt
+alias hte="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-create="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-remove="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
+alias hte-details="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
+alias composer-self-update="sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update"
+alias composer-packages-update="composer global update"
+alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer82="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer73="/usr/bin/php7.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
+alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
+alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
+alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
+alias php="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php73="/usr/bin/php7.3 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias wslrestart="history -a && cmd.exe /C wsl --shutdown"
+```
+
+Una volta finito l'editing del file `.bash_aliases`, eseguire
+
+```bash
+source ~/.bash_aliases
+```
+
+Con questa configurazione di `.bash_aliases` abbiamo:
+
+1. Aliasato il tool `HTE-Cli` (che, ricordo, serve per gestire i VirtualHost sul sistema) con 4 differenti comandi: `hte`, `hte-create`, `hte-remove`, `hte-details`
+2. Creato un alias per **aggiornare i binari di Composer** (installati come binari di sistema su `/usr/local/bin`) con il comando `composer-self-update`. Questo alias aggiornerà sia _Composer 2_ sia _Composer 1_ in una volta sola.
+3. Creato un alias per **aggiornare i pacchetti di Composer installati globalmente** con il comando `composer-packages-update`
+4. Creato svariati alias per i _flavour_ di utilizzo di `Composer` corrispondenti alle versioni target di PHP che sono installate sul sistema. In sintesi, il comando `composer` utilizzerà **PHP 8.2**, `composer81` utilizzerà **PHP 8.1**, `composer80` utilizzerà **PHP 8.0**, e così via fino a `composer72` che utilizzerà **PHP 7.2**. Parimenti, per utilizzare il **vecchio Composer 1** per sviluppare su progetti datati, basterà usare `1composer72`, oppure `1composer71`, oppure `1composer70`, oppure `1composer56`
+5. Creato svariati alias per richiamare il binario di `PHP` su tutte le versioni installate sul sistema, quindi `php` utilizzerà **PHP 8.2**, `php81` utilizzerà **PHP 8.1**, e così via fino a `php56` che utilizzerà **PHP 5.6**
+6. Fatto in modo che sia gli alias riguardanti `composer` sia gli alias riguardanti `php` lavorino con due configurazioni specifiche: `allow_url_fopen` settato su _1_, cioè attivo, e `memory_limit` settato su _1024M_.
+7. Creato un alias per fare il reset della macchina virtuale Ubuntu con il comando `wslrestart`
+
+> Perchè impostare un limite di memoria per gli alias di PHP e Composer? Perchè di default il limite di memoria sarebbe **"nessun limite"**. Questo è pericoloso, perchè **oscura** eventuali potenziali problematiche sul binario di `Composer` stesso, e più in generale sui comandi che lanciamo via command line. Avere un limite di memoria _non infinito_ per l'esecuzione è sempre buona prassi, perchè evita brutte sorprese poi in produzione.
+
+### Testare la configurazione creando un VirtualHost per PhpMyAdmin
 
 A mero titolo esemplificativo, verrà mostrata l'intera procedura di creazione di un _VirtualHost_ funzionante, che esponga l'applicativo _PhpMyAdmin_ sulla macchina locale. Questa installazione potrà essere di aiuto nel caso in cui si decida di continuare ad utilizzarla per navigare tra i _Database Mysql_ presenti sul sistema, e i dati contenuti all'interno di essi.
 
-Prerequisiti:
-
-1. Download del file [create-test-environment.php](/scripts/create-test-environment.php)
-2. Download del file [delete-test-environment.php](/scripts/delete-test-environment.php)
-3. Download del file [list-test-environments.php](/scripts/list-test-environments.php)
-4. Download del file [create-selfsigned-ssl-cert.sh](/scripts/create-selfsigned-ssl-cert.sh)
-
-**Importante:** Dopo aver scaricato i file, modificare `create-test-environment.php` rimpiazzando la stringa `##LINUX_USERNAME##` con il proprio nome utente su Ubuntu.
-
-**Importante:** arrivati a questo punto, se ancora loggati come l'utente `root`, uscire dall'utente `root` e tornare in modalità utente.
-
-```console
-sudo mkdir /etc/apache2/certs-selfsigned/
-cd ~/
-mkdir utils && cd utils/ && mkdir .composer
-nano create-test-environment.php ## COPIA-INCOLLARE IL CONTENUTO DEL RELATIVO FILE
-nano delete-test-environment.php ## COPIA-INCOLLARE IL CONTENUTO DEL RELATIVO FILE
-nano list-test-environments.php ## COPIA-INCOLLARE IL CONTENUTO DEL RELATIVO FILE
-nano create-selfsigned-ssl-cert.sh ## COPIA-INCOLLARE IL CONTENUTO DEL RELATIVO FILE
-chmod +x create-selfsigned-ssl-cert.sh
+```bash
 cd ~/
 mkdir opt && cd opt/
 wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
@@ -394,63 +471,64 @@ unzip phpMyAdmin-5.2.1-all-languages.zip && rm -f phpMyAdmin-5.2.1-all-languages
 
 Ora abbiamo creato la directory radice per l'installazione di _PhpMyAdmin_. Non resta che configurare un VirtualHost funzionante.
 
-Lanciare quindi il comando `sudo php ~/utils/create-test-environment.php` e seguire le istruzioni. Queste istruzioni si applicano **a tutti i progetti web** che si vogliono installare sul sistema.
+> **IMPORTANTE** : le istruzioni che seguono si applicano **a tutti gli ambienti di staging/test locali** che si vorranno abilitare sul sistema tramite il tool `HTE-Cli`
 
-Nell'esempio, il virtualhost per _PhpMyAdmin_ verrà settato come `local.phpmyadmin.test`. Ovviamente, modificare le risposte seguendo il proprio nome utente. Rispondere alle domande dello script come segue:
+```bash
+maurizio:~ $ hte-create
+[sudo] password for maurizio:
 
-```console
-maurizio@FISSO:~$ cd ~/utils/
-maurizio@FISSO:~/utils$ sudo php create-test-environment.php
-### TEST ENVIRONMENT CREATOR ###
-Enter a valid local Domain Name (suggested .test TLD, as "jane.local.test")
-  Type the Domain Name: local.phpmyadmin.test
-Enter a valid directory in the filesystem for the DocumentRoot
-  Type the DocumentRoot: /home/maurizio/opt/phpmyadmin/
-Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1 or 8.2)
-  Type the PHP version: 8.2
-Do you need HTTPS support?
-  Type "yes", "no", "y" or "n": y
+ 💡 Enter a valid local Domain Name (suggested .test TLD, as "jane.local.test") []:
+ > local.phpmyadmin.test
+
+ 💡 Enter a valid directory in the filesystem for the DocumentRoot [/home/maurizio]:
+ > /home/maurizio/opt/phpmyadmin/
+
+ 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2) [8.2]:
+ > 8.2
+
+⏳ VirtualHost configuration for local.phpmyadmin.test created at /etc/apache2/sites-available/008-local.phpmyadmin.test.conf
+⏳ PHP8.2-FPM configuration for local.phpmyadmin.test created at /etc/php/8.2/fpm/pool.d/local.phpmyadmin.test.conf
+⏳ Self-signed SSL certificate script for local.phpmyadmin.test created at /tmp/sscert_local.phpmyadmin.testkLeh4L
+🔐️ Executing the self-signed SSL certificate script for local.phpmyadmin.test...
+ > Removing existing previous self-signed certs with pattern local.phpmyadmin.test.*
+ > Generating certs for local.phpmyadmin.test
+ > Generating RSA private key, 2048 bit long modulus
+ > Writing info to /etc/apache2/certs-selfsigned/local.phpmyadmin.test.info
+ > Protecting the key with chmod 400 /etc/apache2/certs-selfsigned/local.phpmyadmin.test.key
+ > Removing the temporary config file /tmp/openssl.cnf.IMrLcA
+⏳ Enabling local.phpmyadmin.test on config 008-local.phpmyadmin.test...
+⚡ Restarting Apache2...
+⚡ Restarting PHP8.2-FPM...
+✅ VirtualHost local.phpmyadmin.test created successfully!
 ```
 
 Ora, bisogna modificare **il file hosts di Windows** per inserire il puntamento locale al dominio `local.phpmyadmin.test`.
 
-Per farlo, su Windows 11, avremo bisogno dei _PowerToys_. Per l'installazione, si rimanda [alla guida ufficiale di Microsoft](https://learn.microsoft.com/it-it/windows/powertoys/install).
+Per modificare il _file hosts_ su Windows 11, possiamo:
 
-Una volta installato il pacchetto _Microsoft PowerToys_, usare la funzionalità **Editor dei file degli hosts** > **Avvia l'editor del file degli hosts**. Bisognerà aggiungere il mapping tra il l'_indirizzo_ `local.phpmyadmin.test` e l'_host_ `127.0.0.1`.
+1. Usare i _PowerToys_. Per l'installazione e l'utilizzo, si rimanda [alla guida ufficiale di Microsoft](https://learn.microsoft.com/it-it/windows/powertoys/install)
+2. Modificare il file `C:\Windows\System32\drivers\etc\hosts` (consiglio di utilizzare **Notepad++**)
 
 Dopodichè, **aprire una command line di Windows in modalità privilegiata** e lanciare `ipconfig /flushdns`
 
-Fatto! Ora è possibile navigare sul proprio browser all'indirizzo <https://local.phpmyadmin.test/setup/> per proseguire il setup di PhpMyAdmin.
+### Finito!
 
-Per creare altri VirtualHost per altri progetti, **utilizzare sempre le stesse istruzioni seguite per il setup di PhpMyAdmin**. Basterà far puntare il VirtualHost alla directory giusta del proprio progetto, e definire un nome di dominio fittizio che sarà reindirizzato via _file hosts_ verso `127.0.0.1`
+**Complimenti**! Se sei arrivato fino a questo punto, hai tutto quello che ti serve per lavorare, ed è possibile navigare sul proprio browser all'indirizzo <https://local.phpmyadmin.test/setup/> per proseguire il setup di PhpMyAdmin.
 
-## Step 4 - Ottimizzare l'esperienza Linux
+Per creare altri VirtualHost per altri progetti, **utilizzare sempre le stesse istruzioni seguite per il setup di PhpMyAdmin**. Basterà far puntare il VirtualHost alla directory giusta del proprio progetto, e definire un nome di dominio fittizio che sarà reindirizzato dal _file hosts_ verso `127.0.0.1`
 
-Per ottimizzare l'installazione LAMP e l'esperienza utente sulla console dei comandi di Linux, seguire questi passaggi:
+> **NOTE** : per **eliminare** i VirtualHost creati tramite `HTE-Cli`, utilizzare il comando (Alias) `hte-remove`.
+> Per **listare** tutti i VirtualHost creati tramite `HTE-Cli`, utilizzare il comando (Alias) `hte-details`
+
+## Step 4 - Installare una shell custom, NVM, e ottimizzare l'esperienza utente (opzionale)
+
+Questi step **sono opzionali** e servono ad ottimizzare l'esperienza utente sulla console dei comandi di Linux (secondo le mie personali preferenze), oltre che ad installare `nvm` (_Node Version Manager_, per lavorare con _Node_, _React_, etc).
 
 1. Seguire le istruzioni di installazione di `https://github.com/slomkowski/bash-full-of-colors` (o installare _ZSH_, o qualunque altra shell di gradimento: io mi trovo bene con questa bash colorata super minimale, mia opinione personale è che avere meno aiuto possibile sulla bash sia un ottimo modo per non staccare la testa). Riporto un one-liner per installare _Bash full of colors_ `cd ~/ ; git clone https://github.com/slomkowski/bash-full-of-colors.git .bash-full-of-colors ; [ -f .bashrc ] && mv -v .bashrc bashrc.old ; [ -f .bash_profile ] && mv -v .bash_profile bash_profile.old ; [ -f .bash_aliases ] && mv -v .bash_aliases bash_aliases.old ; [ -f .bash_logout ] && mv -v .bash_logout bash_logout.old ; ln -s .bash-full-of-colors/bashrc.sh .bashrc ; ln -s .bash-full-of-colors/bash_profile.sh .bash_profile ; ln -s .bash-full-of-colors/bash_aliases.sh .bash_aliases ; ln -s .bash-full-of-colors/bash_logout.sh .bash_logout ; rm -f bash_logout.old ; rm -f bashrc.old ; rm -f bash_aliases.old`
 2. Lanciare `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash` per installare NVM (per sviluppo NodeJS/React)
-3. Lanciare `cd ~/utils/.composer/ && wget -O composer.phar https://getcomposer.org/download/latest-stable/composer.phar` per installare una versione locale di Composer v2 all'interno della directory `/utils/.composer/` (l'eseguibile _Composer_ **non** sarà disponibile globalmente nell'istanza Ubuntu: creeremo degli _Alias_ per farlo funzionare)
-4. Lanciare `cd ~/utils/.composer/ && wget -O composer-oldstable.phar https://getcomposer.org/download/latest-1.x/composer.phar` per installare una versione locale di Composer v1 all'interno della directory `/utils/.composer/` (l'eseguibile _Composer_ **non** sarà disponibile globalmente nell'istanza Ubuntu: creeremo degli _Alias_ per farlo funzionare). **NOTA**: questa versione di Composer deprecata è utile per far funzionare **vecchi progetti** che non funzionano sulle moderne versioni di PHP.
-5. Creare una coppia di chiavi pubblica/privata con il comando `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/nome_chiave -C "utente@computer"`
-6. Comunicare il contenuto della chiave pubblica al proprio team, che la userà per esempio per abilitare l'accesso ad un repository GIT privato.
-7. Copia-incollare il contenuto dello snippet [.bash_local](/confs/bash_local) all'interno di `~/.bash_local` modificando la variabile `$NOME_UTENTE` con il nome dell'utente scelto
-8. Creare un collegamento alla **home directory di Ubuntu** raggiungibile dal proprio _Desktop_ per visualizzare la home di Ubuntu tramite l'Esplora risorse di Windows: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `\\wsl$\Ubuntu-22.04\home\NOME_UTENTE`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento. Consiglio questa: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico)
-9. Creare un collegamento alla _Bash_ di Ubuntu raggiungibile dal proprio _Desktop_ per avviare un nuovo terminale: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `C:\Windows\System32\wsl.exe -d Ubuntu-22.04 bash -c "cd ~ && bash"`. **Opzionale** : modificare l'icona del collegamento. Consiglio questa: [ubuntu-icon.ico](/icons/ubuntu-icon.ico)
-
-### Note importanti sugli Alias abilitati tramite .bash_local
-
-> Gli alias configurati precedentemente tramite creazione del file `.bash_local` contengono alcuni shortcut utili, facili da memorizzare.
-> Si consiglia una lettura di questo file e si ricorda che è sempre possibile modificarlo a proprio piacimento.
-
-1. E' possibile fare il reset della macchina virtuale Ubuntu con il comando `wslrestart`
-2. Non è necessario specificare opzioni particolari per il comando `ls`, in quanto è già stato aliasato con le opzioni più consone per avere tutti i dettagli verbosi della directory
-3. Il comando `composer` (di default, la versione 2) è stato declinato in svariati _flavour_ corrispondenti alle versioni target di PHP che sono installate sul sistema. In sintesi, il comando `composer` utilizzerà **PHP 8.2**, `composer81` utilizzerà **PHP 8.1**, `composer80` utilizzerà **PHP 8.0**, e così via fino a `composer72` che utilizzerà **PHP 7.2**. Se invece si desiderasse utilizzare il **vecchio e deprecato Composer 1** per sviluppare su progetti davvero datati, basterà usare `1composer72`, oppure `1composer71`, oppure `1composer70`, oppure `1composer56`. In questo caso, verrà usato dietro le quinte il _binario_ `composer-oldstable.phar` precedentemente scaricato
-4. Similarmente a quanto sopra riportato, anche la _CLI_ di PHP è soggetta ad Aliasing, in quanto abbiamo installato svariate versioni di PHP durante il setup. Quindi, se si desidera utilizzare una CLI di PHP di una versione specifica, basterà digitare `php` per la versione **8.2**, `php81` per la versione **8.1**, `php80` per la versione **8.0**, e così via fino a `php56` per la versione **5.6**
-5. E' possibile mantenere aggiornati i _binari_ di _Composer_ con l'alias `updatecomposer`
-6. E' possibile **creare gli ambienti di test/staging** con l'alias `create-test-env`. L'alias si occuperà di richiamare lo script `~/utils/create-test-environment.php`
-7. E' possibile **RIMUOVERE gli ambienti di test/staging** creati precedentemente con l'alias `remove-test-env`. L'alias si occuperà di richiamare lo script `~/utils/delete-test-environment.php`
-8. E' possibile **listare** ambienti di test/staging creati precedentemente con l'alias `list-test-envs`. L'alias si occuperà di richiamare lo script `~/utils/list-test-environments.php`
+3. Creare una coppia di chiavi pubblica/privata con il comando `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/nome_chiave -C "utente@computer"` (comunicare il contenuto della chiave pubblica `~/.ssh/nome_chiave.pub`al proprio team, che la userà per esempio per abilitare l'accesso ad un repository GIT privato.)
+4. Creare un collegamento alla **home directory di Ubuntu** raggiungibile dal proprio _Desktop_ per visualizzare la home di Ubuntu tramite l'Esplora risorse di Windows: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `\\wsl$\Ubuntu-22.04\home\NOME_UTENTE`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico))
+5. Creare un collegamento alla _Bash_ di Ubuntu raggiungibile dal proprio _Desktop_ per avviare un nuovo terminale: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `C:\Windows\System32\wsl.exe -d Ubuntu-22.04 bash -c "cd /home/NOME_UTENTE && bash"`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-icon.ico](/icons/ubuntu-icon.ico))
 
 ## Step 5 - Installare VS Code per accedere ai file di progetto su WSL2
 
@@ -464,36 +542,54 @@ Per installare e configurare VS Code con WSL2 è sufficiente:
 2. Aprire VS Code e premere la combinazione di comandi `CTRL + SHIFT + x`
 3. Installare l'estensione **Remote - WSL**
 4. Riavviare VS Code
-5. Aprire una console di Ubuntu, e portarsi su una directory a piacere, ad esempio `~/utils/`
+5. Aprire una console di Ubuntu, e portarsi su una directory a piacere, ad esempio `~/opt/` oppure `~/.config/composer`
 6. Lanciare il comando `code .` e lasciare che il sistema installi quello che gli serve
-7. Voilà, **ora è possibile modificare i file presenti su Ubuntu direttamente da VS Code!**
+7. Fatto! Da questo momento **sarà possibile modificare i file presenti su Ubuntu direttamente da VS Code** installato su Windows.
 
 ## Step 6 - Ottimizzare, con le estensioni consigliate, lo sviluppo web su VS Code
 
-Portarsi su una console di Ubuntu e lanciare questi comandi:
+Qui riporto un elenco di plugin e configurazioni utili per lo **sviluppo PHP su VS Code**.
 
-1. `cd ~/utils/`
-2. `mkdir .composer && cd .composer/`
-3. `nano composer.json` e inserire questo contenuto all'interno:
+> E' **molto importante** che la lista dei plugin che segue venga installata durante una **sessione WSL** all'interno di VS Code.
+> Per farlo, portarsi su una directory qualsiasi di Ubuntu, ad esempio `~/opt/` oppure `~/.config/composer`, e lanciare il comando `code .`
+> Così facendo, si aprirà VS Code in una sessione WSL e i plugin (e le relative configurazioni di _Environment_ di VS Code) verranno applicate a WSL2, e non su Windows.
 
-```json
-{
-    "require": {
-        "squizlabs/php_codesniffer": "^3",
-        "friendsofphp/php-cs-fixer": "^3"
-    }
-}
-```
+Per ogni plugin, è sufficiente premere `CTRL + SHIFT + x` e digitare il nome del plugin da cercare.
 
-Dopodichè, lanciare questo comando: `composer install`
+1. Cercare **php cs fixer** e installare la versione del plugin di **junstyle** <https://github.com/junstyle/vscode-php-cs-fixer.git>
+2. Cercare **GitLens** e installare la versione del plugin di **Eric Amodio** <https://github.com/eamodio/vscode-gitlens>
+3. Cercare **Git History** e installare la versione del plugin di **Don Jayamanne**, <https://github.com/DonJayamanne/gitHistoryVSCode>
+4. Cercare **PHP Intelephense** e installare la versione del plugin di **Ben Mewburn**, <https://github.com/bmewburn/vscode-intelephense>
+5. Cercare **Prettier - Code Formatter** e installare la versione del plugin di **Prettier**, <https://github.com/prettier/prettier-vscode>
+6. Cercare **PHP DocBlocker** e installare la versione del plugin di **Nail Brayfield**, <https://github.com/neild3r/vscode-php-docblocker>
+7. Cercare **markdownlint** e installare la versione del plugin di **David Anson**, <https://github.com/DavidAnson/vscode-markdownlint>
+8. Cercare **Material Icon Theme** e installare la versione del plugin di **Philipp Kief**, <https://github.com/PKief/vscode-material-icon-theme>
 
-Da questo momento abbiamo a disposizione i binari di **php-cs-fixer** e **php codesniffer**, ci serviranno per la config di VS Code.
+Una volta installati tutti i plugin, premere la combinazione di tasti `CTRL + SHIFT + p`, digitare **JSON**, e selezionare su **Preferenze: Apri Impostazioni Remote (JSON) (WSL: Ubuntu-22.04)** (se la lingua di VS Code è inglese, bisognerà selezionare **Preferences: Open Remote Settings (JSON) (WSL: Ubuntu-22.04)**)
 
-Quindi, ecco gli step da seguire per configurare e ottimizzare **VS Code** per lo sviluppo PHP:
+A questo punto, copia-incollare la configurazione _JSON_ riportata nello snippet [vscode.json](/confs/vscode.json), modificando la variabile `##LINUX_USERNAME##` con il nome utente utilizzato su Ubuntu.
 
-1. Aprire VS Code, e portarsi su un progetto residente dentro Ubuntu per rimanere in "modalità WSL2"
-2. Premere `CTRL + SHIFT + x`, cercare **php cs fixer** e installare la versione del plugin di **junstyle** (<https://github.com/junstyle/vscode-php-cs-fixer.git>)
-3. Installare le seguenti estensioni: **GitLens** (Eric Amodio, <https://github.com/eamodio/vscode-gitlens>), **Git History** (Don Jayamanne, <https://github.com/DonJayamanne/gitHistoryVSCode>), **PHP Intelephense** (Ben Mewburn, <https://github.com/bmewburn/vscode-intelephense>), **Prettier - Code Formatter** (Prettier, <https://github.com/prettier/prettier-vscode>), **PHP DocBlocker** (Nail Brayfield, <https://github.com/neild3r/vscode-php-docblocker>), **Twig Language** (mblode, <https://github.com/mblode/vscode-twig-language>), **markdownlint** (David Anson, <https://github.com/DavidAnson/vscode-markdownlint>)
-4. Installare il seguente pacchetto icone: **Material Icon Theme** (Philipp Kief, <https://github.com/PKief/vscode-material-icon-theme>)
-5. Premere la combinazione di tasti `CTRL + SHIFT + p`, digitare **preferenze**, e cliccare su **Preferenze: Apri Impostazioni (JSON)**
-6. Copia-incollare la configurazione riportata nello snippet [vscode.json](/confs/vscode.json), modificando la variabile `$NOME_UTENTE` con il nome utente utilizzato su Ubuntu.
+Questa configurazione contiene sia **impostazioni di mia preferenza personale**, sia impostazioni dedicate a far funzionare i vari **formattatori** e **php cs fixer**.
+
+> **NOTA** : la configurazione consigliata su [vscode.json](/confs/vscode.json) richiede l'installazione dei font [Roboto Sans](https://fonts.google.com/specimen/Roboto) e [Source Code Pro](https://fonts.google.com/specimen/Source+Code+Pro)
+> Il font **Roboto Sans** viene utilizzato per l'output sul _terminale integrato_, mentre il font **Source Code Pro** sarà il font utilizzato per il _codice sorgente_, _file markdown_, _readme_, insomma tutti gli editor di testo.
+> Si omettono istruzioni precise e puntuali per l'installazione dei font su Windows. Tuttavia, è sufficiente scaricare i file `ttf` dei font, aprirli con Windows, e cliccare su `Installa`.
+
+## Epilogo
+
+### Personalizzazione del Proprio Ecosistema LAMP Locale
+
+Questa README è il mio progetto artigianale per installare e configurare un ambiente di sviluppo **locale** _LAMP_ su Windows 11 con WSL2. È il frutto delle mie esperienze personali, sia positive che negative, per raggiungere un flusso di lavoro che **mi soddisfi**. E' chiaro che, se questa guida funziona e va bene per me, la tua esperienza o il tuo gusto personale potrebbero essere diversi.
+
+### Contributo della Comunità
+
+Pensi che questo progetto possa essere arricchito? I tuoi contributi possono trasformare questa guida da un lavoro individuale ad un capolavoro comunitario. Apri una issue o crea una pull request per condividere le tue intuizioni.
+
+### Disclaimer di Responsabilità dell'Utente
+
+Procedendo con questa guida, assumi la piena responsabilità per qualsiasi modifica o azione eseguita sul tuo dispositivo. Né l'autore né eventuali collaboratori potranno essere ritenuti responsabili per qualsiasi conseguenza, inclusa ma non limitata a perdita di dati, corruzione del sistema o guasto hardware. **Prosegui a tuo rischio e pericolo.**
+
+### Licenza
+
+Questo progetto è distribuito sotto la licenza MIT. Per ulteriori dettagli, fai riferimento al file [LICENSE](/LICENSE) nel repository
+

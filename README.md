@@ -1,6 +1,6 @@
 # Setup a LAMP Stack on Windows 11, with WSL2, Ubuntu 22.04, native systemd Services and VS Code optimizations
 
-This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP Stack_ that is targeted on Windows 11 (and 10, see below), with _WSL2_ and **Ubuntu 22.04**, with a _LAMP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
+This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP Stack_ that is targeted on Windows 11 (and also on Windows 10, see below), with _WSL2_ and **Ubuntu 22.04**, with a _LAMP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
 
 ## Why use Win11 in the first place, and why native systemd services instead of containers?
 
@@ -8,7 +8,7 @@ During my years of on-field experience, I've created _my own workflow_ that allo
 
 1. Use MS Windows, if he/she's comfortable with it
 2. Use the _Linux Terminal_ with all the performance optimizations made possible by **WSL2**, and specifically use **Ubuntu** as its userbase is consistent: if you encounter a problem, or need a specific package, there's a good probability that you will find informations on how to fix the issue or complete the task in minutes
-3. Use native _systemd services_ like **Apache** and **MariaDB** instead of relying on _Containers_ like Docker. Although, in fact, _Docker performance is nearly identical to native performance in Linux_, (references: [1](https://dominoweb.draco.res.ibm.com/reports/rc25482.pdf) and [2](https://stackoverflow.com/questions/21889053/what-is-the-runtime-performance-cost-of-a-docker-container)) my **personal opinion** is that, if a Client has its own VM or shared hosting or voodoo server where _Dockerization is technically not feasible_, then **development workflow, staging and test should be as much as possible adherent to what will the production environment be**. That said, this means having a set of tools to allow the developer _to quicky deploy_ on various types of production configurations (PHP versions, mainly).
+3. Use native _systemd services_ like **Apache** and **MariaDB** instead of relying on _Containers_ like Docker. Although, in fact, _Docker performance is nearly identical to native performance in Linux_, (references: [1](https://dominoweb.draco.res.ibm.com/reports/rc25482.pdf) and [2](https://stackoverflow.com/questions/21889053/what-is-the-runtime-performance-cost-of-a-docker-container)) my **personal opinion** is that, if a Client has its own VM or shared hosting or voodoo server where _Dockerization is technically not feasible_, then **development workflow, staging and test should be as much as possible adherent to what will the production environment be**. That said, this means having a set of tools to allow the developer _to quicky deploy, test and benchmark_ on various types of _PHP versions and configurations_ that will be available in the production server.
 
 ## What will the LAMP stack be?
 
@@ -16,9 +16,10 @@ The _LAMP Stack_ will be configured in this way:
 
 1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.2_ (_Note: PHP 8.3 is still in beta, and is set to be released on November 23, 2023._)
 2. Use the `ppa:ondrej/apache2` Apache repo
-3. Make _Apache Virtualhosts_ work via _PHP-FPM_ and enable the developer to use quick _deploy_ commands to setup a native local VirtualHost located in the Ubuntu machine
-4. Let the developer choose the target PHP version of the deployed VirtualHost ([see here](/docs/en/SETUP-EN.md#important-notes-on-aliases-enabled-via-bash_local))
-5. Use `mariadb 10.6` and optimize Mysql so that it will not create headaches ([see here](/docs/en/SETUP-EN.md#c-modify-mysql-configuration))
+3. Use the [`mfonte/hte-cli`](https://github.com/mauriziofonte/hte-cli) tool to handle _Apache Virtualhosts_. This tool can be used to **create, delete and list** virtualhosts that are specifically optimized for **local/test development**.
+4. Make _Apache Virtualhosts_ work via _PHP-FPM_ and enable the developer to use quick _deploy_ commands to setup a native local VirtualHost located in the Ubuntu machine
+5. Let the developer choose the target PHP version of the deployed VirtualHost ([see here](/docs/en/SETUP-EN.md#test-the-configuration-by-creating-a-virtualHost-for-phpmyadmin))
+6. Use `mariadb 10.6` and optimize Mysql so that it will not create headaches ([see here](/docs/en/SETUP-EN.md#c-modify-mysql-configuration))
 
 ## Installation instructions
 
@@ -45,6 +46,22 @@ Tips:
 
 1. If you want to run the automated install on **Windows 10**, just append `-SkipWindowsVersionCheck` at the end of the one-liner install
 2. If you want to test a **Dry Run** of the script (no modifications made to your PC), just append `-DryRun` at the end of the one-liner install
+
+#### The installer can also be run on a pre-existing Ubuntu or Debian machine
+
+The **automated install** will execute a specific [_Bash Script_](/install/lamp-stack.sh) that takes care of configuring the **Ubuntu** machine, after the WSL2 VM has been installed.
+
+Anyway, **if you already have a working Ubuntu/Debian** WSL2 VM then you can simply run
+
+```bash
+wget -qO- https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/lamp-stack.sh | bash
+```
+
+The same command can be lauched on a **Ubuntu/Debian VM hosted on a Cloud Service**, but, you'll need to adjust the _Apache Configuration_ so that:
+
+1. it binds to _non-localhost_ ports (`/etc/apache2/ports.conf`)
+2. it runs with the correct _User_ and _Group_ (`/etc/apache2/envvars`)
+3. if you intend to expose the Apache Webserver to the whole internet: **HARDEN THE SECURITY**. This applies to both _Apache_ and _PHP_ configs.
 
 ### Manual Install
 
