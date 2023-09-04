@@ -1,6 +1,6 @@
 # Manual LAMP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 22.04 (without Microsoft Store)
 
-> Last updated at: _23/08/2023_. Target Ubuntu version: 22.04.03
+> Last updated at: _2023-09-04_. Target Ubuntu version: 22.04.03
 
 This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 22.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP** stack (with native services through _systemd_), and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
 
@@ -10,7 +10,7 @@ This guide will illustrate how to install support for the native Linux subsystem
 2. 16GB of RAM
 3. At least 50GB of free space on C:\\ (it will contain the Ubuntu 22.04 virtual disk)
 4. An SSD (better if NVMe) as the main Windows disk
-5. A _medium-level_ knowledge of the Linux terminal (such as how to use and what basic commands like _cd_, _cp_, _mv_, _sudo_, _nano_, etc. are)
+5. A _medium-level_ knowledge of the Linux terminal (such as how to use and what basic commands like _cd_, _cp_, _mv_, _sudo_, _nano_, etc.)
 6. Your computer **should be password protected, use BitLocker, and have support for TPM 2.0** to prevent malicious access to sensitive information, if someone were to gain possession of your device. **This is particularly important if you intend to handle information on behalf of others (work)**. Your security policies on the network and the devices you use should be appropriate for the type of PC use you intend to carry out. Generally, _if you use your PC for work, you need to pay utmost attention to protection_. Prevention is better than cure.
 
 The **LAMP** stack we're going to configure supports **https** (with self-signed certificates expiring in 30 years), **http/2** protocol, and **brotli compression**. As for the PHP part, we'll use **PHP-FPM** because it's more performant and more versatile in configuring _per-virtualhost_ settings. To understand the differences between using PHP with Apache in PHP-CGI mode versus PHP-FPM, refer to this guide: <https://www.basezap.com/difference-php-cgi-php-fpm/>
@@ -470,6 +470,13 @@ Now, we've created the root directory for the _PhpMyAdmin_ installation. All tha
 ```bash
 maurizio:~ $ hte-create
 [sudo] password for maurizio:
+   __ __ ______ ____      _____ __ _
+  / // //_  __// __/____ / ___// /(_)
+ / _  /  / /  / _/ /___// /__ / // /
+/_//_/  /_/  /___/      \___//_//_/
+
+[H]andle [T]est [E]nvironment Cli Tool version 1.0.5 by Maurizio Fonte
+WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/firewalled networks.
 
  💡 Enter a valid local Domain Name (suggested .test TLD, as "jane.local.test") []:
  > local.phpmyadmin.test
@@ -480,16 +487,22 @@ maurizio:~ $ hte-create
  💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2) [8.2]:
  > 8.2
 
+ 💡 Do you need HTTPS support? ["yes", "no", "y" or "n"] [y]:
+ > y
+
+ 💡 Do you want to force HTTPS? ["yes", "no", "y" or "n"] [y]:
+ > y
+
 ⏳ VirtualHost configuration for local.phpmyadmin.test created at /etc/apache2/sites-available/008-local.phpmyadmin.test.conf
 ⏳ PHP8.2-FPM configuration for local.phpmyadmin.test created at /etc/php/8.2/fpm/pool.d/local.phpmyadmin.test.conf
-⏳ Self-signed SSL certificate script for local.phpmyadmin.test created at /tmp/sscert_local.phpmyadmin.testkLeh4L
+⏳ Self-signed SSL certificate script for local.phpmyadmin.test created at /tmp/sscert_local.phpmyadmin.testnPwhL6
 🔐️ Executing the self-signed SSL certificate script for local.phpmyadmin.test...
  > Removing existing previous self-signed certs with pattern local.phpmyadmin.test.*
  > Generating certs for local.phpmyadmin.test
  > Generating RSA private key, 2048 bit long modulus
  > Writing info to /etc/apache2/certs-selfsigned/local.phpmyadmin.test.info
  > Protecting the key with chmod 400 /etc/apache2/certs-selfsigned/local.phpmyadmin.test.key
- > Removing the temporary config file /tmp/openssl.cnf.IMrLcA
+ > Removing the temporary config file /tmp/openssl.cnf.r60k8l
 ⏳ Enabling local.phpmyadmin.test on config 008-local.phpmyadmin.test...
 ⚡ Restarting Apache2...
 ⚡ Restarting PHP8.2-FPM...

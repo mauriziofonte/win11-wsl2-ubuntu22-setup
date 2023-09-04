@@ -476,6 +476,13 @@ Ora abbiamo creato la directory radice per l'installazione di _PhpMyAdmin_. Non 
 ```bash
 maurizio:~ $ hte-create
 [sudo] password for maurizio:
+   __ __ ______ ____      _____ __ _
+  / // //_  __// __/____ / ___// /(_)
+ / _  /  / /  / _/ /___// /__ / // /
+/_//_/  /_/  /___/      \___//_//_/
+
+[H]andle [T]est [E]nvironment Cli Tool version 1.0.5 by Maurizio Fonte
+WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/firewalled networks.
 
  💡 Enter a valid local Domain Name (suggested .test TLD, as "jane.local.test") []:
  > local.phpmyadmin.test
@@ -486,16 +493,22 @@ maurizio:~ $ hte-create
  💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2) [8.2]:
  > 8.2
 
+ 💡 Do you need HTTPS support? ["yes", "no", "y" or "n"] [y]:
+ > y
+
+ 💡 Do you want to force HTTPS? ["yes", "no", "y" or "n"] [y]:
+ > y
+
 ⏳ VirtualHost configuration for local.phpmyadmin.test created at /etc/apache2/sites-available/008-local.phpmyadmin.test.conf
 ⏳ PHP8.2-FPM configuration for local.phpmyadmin.test created at /etc/php/8.2/fpm/pool.d/local.phpmyadmin.test.conf
-⏳ Self-signed SSL certificate script for local.phpmyadmin.test created at /tmp/sscert_local.phpmyadmin.testkLeh4L
+⏳ Self-signed SSL certificate script for local.phpmyadmin.test created at /tmp/sscert_local.phpmyadmin.testnPwhL6
 🔐️ Executing the self-signed SSL certificate script for local.phpmyadmin.test...
  > Removing existing previous self-signed certs with pattern local.phpmyadmin.test.*
  > Generating certs for local.phpmyadmin.test
  > Generating RSA private key, 2048 bit long modulus
  > Writing info to /etc/apache2/certs-selfsigned/local.phpmyadmin.test.info
  > Protecting the key with chmod 400 /etc/apache2/certs-selfsigned/local.phpmyadmin.test.key
- > Removing the temporary config file /tmp/openssl.cnf.IMrLcA
+ > Removing the temporary config file /tmp/openssl.cnf.r60k8l
 ⏳ Enabling local.phpmyadmin.test on config 008-local.phpmyadmin.test...
 ⚡ Restarting Apache2...
 ⚡ Restarting PHP8.2-FPM...
