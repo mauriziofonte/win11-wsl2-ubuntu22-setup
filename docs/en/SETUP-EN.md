@@ -181,7 +181,7 @@ LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
 apt update && apt upgrade
 PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
 PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
-APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done; done)
+APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do if [ "$VER" = "8.3" -a "$MOD" = "mcrypt" ]; then continue; fi; echo -n "php$VER-$MOD "; done; done)
 apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
 a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
 a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)

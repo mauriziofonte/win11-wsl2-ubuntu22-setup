@@ -121,10 +121,17 @@
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
         PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
-        APTPACKS=$(for VER in $PHPVERS; do
-            echo -n "libapache2-mod-php$VER php$VER "
-            for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done
-        done)
+        APTPACKS=""
+        for VER in $PHPVERS; do
+            APTPACKS+="libapache2-mod-php$VER php$VER "
+            for MOD in $PHPMODS; do
+                # mcrypt is not available for PHP 8.3
+                if [ "$VER" = "8.3" ] && [ "$MOD" = "mcrypt" ]; then
+                    continue
+                fi
+                APTPACKS+="php$VER-$MOD "
+            done
+        done
         sudo apt-get --assume-yes --quiet install apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
         sudo a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
         sudo a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
