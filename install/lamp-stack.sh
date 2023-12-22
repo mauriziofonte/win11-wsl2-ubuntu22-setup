@@ -119,8 +119,8 @@
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/php
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
-        PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
-        PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
+        PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+        PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
         APTPACKS=$(for VER in $PHPVERS; do
             echo -n "libapache2-mod-php$VER php$VER "
             for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done
@@ -134,9 +134,9 @@
         sudo systemctl restart apache2.service
         sudo systemctl enable redis-server.service
         sudo systemctl start redis-server.service
-        sudo update-alternatives --set php /usr/bin/php8.2
-        sudo update-alternatives --set phar /usr/bin/phar8.2
-        sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.2
+        sudo update-alternatives --set php /usr/bin/php8.3
+        sudo update-alternatives --set phar /usr/bin/phar8.3
+        sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.3
 
         sudo apt-get --assume-yes --quiet install mariadb-server
         sudo systemctl enable mariadb.service
@@ -394,14 +394,15 @@ expect eof"
             ubwsl_echo info "Creating the ~/.bash_aliases file with some useful aliases"
             BASHLOCAL_FILE=$(
                 cat <<EOF
-alias hte="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-create="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-remove="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
-alias hte-details="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
+alias hte="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-create="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-remove="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
+alias hte-details="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
 alias composer-self-update="sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update"
 alias composer-packages-update="composer global update"
-alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer82="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
@@ -411,7 +412,8 @@ alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /u
 alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias php="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M"

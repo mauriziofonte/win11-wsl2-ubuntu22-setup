@@ -161,14 +161,14 @@ Dopodichè, riavviare la macchina Ubuntu.
 
 ## Step 1 - Configurare l'ambiente LAMP su Ubuntu
 
-Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1 e 8.2. Abiliteremo anche il **web server Apache** e il server **Mysql**.
+Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 e 8.3. Abiliteremo anche il **web server Apache** e il server **Mysql**.
 
 **Perchè installare tante versioni di PHP**? E' importante per due motivi:
 
 1. avere a disposizione un **ambiente di sviluppo** che consenta, con facilità, di **testare la propria applicazione con svariate versioni di PHP**. Questo agevolerà il lavoro in caso di constraint specifici sui server di produzione dove andremo ad installare le applicazioni create.
 2. in caso un Cliente o un progetto specifico vi richieda di **mantenere e/o modificare una vecchia base di codice funzionante su una specifica versione di PHP**, non avrete difficoltà a rendere funzionante l'ambiente di dev&test in locale.
 
-> Si presume che la versione di default di PHP che si vorrà utilizzare nel sistema sia la **8.2**. Questo è modificabile tramite le righe `update-alternatives --set php***` che si troveranno nella lista qui sotto. Ad esempio, se si desidera che la versione di PHP di default (quella che verrà utilizzata digitando semplicemente il comando `php` e non la sua versione "versionata" es `php7.4`) basterà specificare `update-alternatives --set php /usr/bin/php7.4`. _(Ad ogni modo, questo comportamento verrà in ogni caso modificato con i Bash Alias che andremo a configurare più tardi)_
+> Si presume che la versione di default di PHP che si vorrà utilizzare nel sistema sia la **8.3**. Questo è modificabile tramite le righe `update-alternatives --set php***` che si troveranno nella lista qui sotto. Ad esempio, se si desidera che la versione di PHP di default (quella che verrà utilizzata digitando semplicemente il comando `php` e non la sua versione "versionata" es `php7.4`) basterà specificare `update-alternatives --set php /usr/bin/php7.4`. _(Ad ogni modo, questo comportamento verrà in ogni caso modificato con i Bash Alias che andremo a configurare più tardi)_
 
 **IMPORTANTE**: Lanciare tutti questi comando come l'utente `root` su Ubuntu (il comando `sudo su -`). **IMPORTANTE**: Escludere le linee che iniziano con **#** in quanto servono solo a differenziare i vari blocchi.
 
@@ -180,8 +180,8 @@ apt install -y net-tools zip unzip git redis-server lsb-release ca-certificates 
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
 apt update && apt upgrade
-PHPVERS="8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
-PHPMODS="cli fpm common bcmath bz2 curl gd intl mbstring mcrypt mysql opcache sqlite3 redis xml zip"
+PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
 APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do echo -n "php$VER-$MOD "; done; done)
 apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
 a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
@@ -192,9 +192,9 @@ systemctl enable apache2.service
 systemctl restart apache2.service
 systemctl enable redis-server.service
 systemctl start redis-server.service
-update-alternatives --set php /usr/bin/php8.2
-update-alternatives --set phar /usr/bin/phar8.2
-update-alternatives --set phar.phar /usr/bin/phar.phar8.2
+update-alternatives --set php /usr/bin/php8.3
+update-alternatives --set phar /usr/bin/phar8.3
+update-alternatives --set phar.phar /usr/bin/phar.phar8.3
 
 # MYSQL
 sudo su -
@@ -410,14 +410,15 @@ Ora che abbiamo installato tutto, non ci resta che creare dei _Bash Aliases_ che
 Lanciare quindi `nano .bash_aliases` (oppure `vim .bash_aliases`) e incollare questi alias:
 
 ```txt
-alias hte="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-create="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-remove="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
-alias hte-details="sudo /usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
+alias hte="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-create="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-remove="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
+alias hte-details="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
 alias composer-self-update="sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update"
 alias composer-packages-update="composer global update"
-alias composer="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer82="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
@@ -427,7 +428,8 @@ alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /u
 alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias php="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M"
@@ -451,8 +453,8 @@ Con questa configurazione di `.bash_aliases` abbiamo:
 1. Aliasato il tool `HTE-Cli` (che, ricordo, serve per gestire i VirtualHost sul sistema) con 4 differenti comandi: `hte`, `hte-create`, `hte-remove`, `hte-details`
 2. Creato un alias per **aggiornare i binari di Composer** (installati come binari di sistema su `/usr/local/bin`) con il comando `composer-self-update`. Questo alias aggiornerà sia _Composer 2_ sia _Composer 1_ in una volta sola.
 3. Creato un alias per **aggiornare i pacchetti di Composer installati globalmente** con il comando `composer-packages-update`
-4. Creato svariati alias per i _flavour_ di utilizzo di `Composer` corrispondenti alle versioni target di PHP che sono installate sul sistema. In sintesi, il comando `composer` utilizzerà **PHP 8.2**, `composer81` utilizzerà **PHP 8.1**, `composer80` utilizzerà **PHP 8.0**, e così via fino a `composer72` che utilizzerà **PHP 7.2**. Parimenti, per utilizzare il **vecchio Composer 1** per sviluppare su progetti datati, basterà usare `1composer72`, oppure `1composer71`, oppure `1composer70`, oppure `1composer56`
-5. Creato svariati alias per richiamare il binario di `PHP` su tutte le versioni installate sul sistema, quindi `php` utilizzerà **PHP 8.2**, `php81` utilizzerà **PHP 8.1**, e così via fino a `php56` che utilizzerà **PHP 5.6**
+4. Creato svariati alias per i _flavour_ di utilizzo di `Composer` corrispondenti alle versioni target di PHP che sono installate sul sistema. In sintesi, il comando `composer` utilizzerà **PHP 8.3**, `composer82` utilizzerà **PHP 8.2**, `composer81` utilizzerà **PHP 8.1**, e così via fino a `composer72` che utilizzerà **PHP 7.2**. Parimenti, per utilizzare il **vecchio Composer 1** per sviluppare su progetti datati, basterà usare `1composer72`, oppure `1composer71`, oppure `1composer70`, oppure `1composer56`
+5. Creato svariati alias per richiamare il binario di `PHP` su tutte le versioni installate sul sistema, quindi `php` utilizzerà **PHP 8.3**, `php82` utilizzerà **PHP 8.3**, e così via fino a `php56` che utilizzerà **PHP 5.6**
 6. Fatto in modo che sia gli alias riguardanti `composer` sia gli alias riguardanti `php` lavorino con due configurazioni specifiche: `allow_url_fopen` settato su _1_, cioè attivo, e `memory_limit` settato su _1024M_.
 7. Creato un alias per fare il reset della macchina virtuale Ubuntu con il comando `wslrestart`
 
@@ -490,8 +492,8 @@ WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/fire
  💡 Enter a valid directory in the filesystem for the DocumentRoot [/home/maurizio]:
  > /home/maurizio/opt/phpmyadmin/
 
- 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2) [8.2]:
- > 8.2
+ 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3) [8.3]:
+ > 8.3
 
  💡 Do you need HTTPS support? ["yes", "no", "y" or "n"] [y]:
  > y
@@ -500,7 +502,7 @@ WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/fire
  > y
 
 ⏳ VirtualHost configuration for local.phpmyadmin.test created at /etc/apache2/sites-available/008-local.phpmyadmin.test.conf
-⏳ PHP8.2-FPM configuration for local.phpmyadmin.test created at /etc/php/8.2/fpm/pool.d/local.phpmyadmin.test.conf
+⏳ PHP8.3-FPM configuration for local.phpmyadmin.test created at /etc/php/8.3/fpm/pool.d/local.phpmyadmin.test.conf
 ⏳ Self-signed SSL certificate script for local.phpmyadmin.test created at /tmp/sscert_local.phpmyadmin.testnPwhL6
 🔐️ Executing the self-signed SSL certificate script for local.phpmyadmin.test...
  > Removing existing previous self-signed certs with pattern local.phpmyadmin.test.*
@@ -511,7 +513,7 @@ WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/fire
  > Removing the temporary config file /tmp/openssl.cnf.r60k8l
 ⏳ Enabling local.phpmyadmin.test on config 008-local.phpmyadmin.test...
 ⚡ Restarting Apache2...
-⚡ Restarting PHP8.2-FPM...
+⚡ Restarting PHP8.3-FPM...
 ✅ VirtualHost local.phpmyadmin.test created successfully!
 ```
 
