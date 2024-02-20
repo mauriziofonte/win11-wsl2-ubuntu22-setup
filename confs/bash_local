@@ -1,3 +1,4 @@
+# LAMP-Stack related aliases
 alias hte="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
 alias hte-create="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
 alias hte-remove="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
@@ -27,9 +28,15 @@ alias php72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M"
+
+# System-related aliases
 alias wslrestart="history -a && cmd.exe /C wsl --shutdown"
 alias apt="sudo apt-get"
 alias ls="ls -lash --color=auto --group-directories-first"
+alias git-list-commits="git shortlog -s -n --all --no-merges"
+alias git-remove-branch="gitremovebranch"
+alias list-huge-files="hugefiles"
+alias list-huge-directories="hugedirs"
 alias cd..="cd .."
 alias ..="cd ../../"
 alias ...="cd ../../../"
@@ -38,23 +45,114 @@ alias .....="cd ../../../../"
 alias .4="cd ../../../../"
 alias .5="cd ../../../../.."
 alias ports="sudo netstat -tulanp"
-alias tic="git"
-alias npmclean="npm ci"
-alias npmcheck="ncu"
+alias npm-clean="npm ci"
+alias npm-check="ncu"
 
-gitremove() {
+# Docker-related aliases
+# List all containers: Alias to quickly list all containers, including stopped ones.
+alias dcls='docker container ls -a'
+# List running containers: For checking only the containers that are currently running.
+alias dclsr='docker container ls'
+# List all Docker images: Handy for reviewing the images on your system.
+alias dils='docker image ls'
+# Remove all stopped containers: Clean up space by removing stopped containers.
+alias dcrm='docker container prune'
+# Remove unused Docker images: Helps in freeing up disk space.
+alias dirm='docker image prune -a'
+# Docker Compose Up: Start and build your docker-compose project
+alias dcup='docker-compose up -d'
+# Docker Compose Down: Stop and remove your docker-compose project
+alias dcdown='docker-compose down'
+# Docker Compose Logs: View logs of your docker-compose project
+alias dclogs='docker-compose logs -f'
+
+# Deletes a local Git branch and its corresponding remote branch.
+# This function first deletes the branch locally using git branch -d and then deletes it from the remote repository with git push origin --delete.
+gitremovebranch() {
     git branch -d "$@"
     git push origin --delete "$@"
 }
 
+# Lists the top 100 largest files in the specified directory or current directory if no directory is specified, sorted by size.
+# It uses "find" to list files and sort to order them by size.
 hugefiles() {
-    du -a "$@" | sort -n -r | head -n 100
+    if [ "$1" == "help" ]
+    then
+        echo "usage: $0 [PATH]";
+        echo "  lists all files in PATH sorted by size";
+        echo "  if PATH is not defined, the current directory is used";
+        exit 1
+    fi
+    CURRENT_DIR=$(pwd)
+    cd "$@" && find . -type f -printf '%s %p %TY-%Tm-%Td %TH:%TM:%TS\n' | sort -nr -k1 | awk '{ printf "%-12s %-50s %s\n", $1/1024/1024 "MB", $2, $3 " " $4 }' | head -n 100
+    cd "$CURRENT_DIR"
 }
 
+# Lists the top 100 largest directories in the specified or current directory, sorted by their size.
+# Utilizes "du" for directory sizes and "sort" for ordering.
 hugedirs() {
-    cd "$@" && du -hsx -- * | sort -rh | head -100
+    if [ "$1" == "help" ]
+    then
+        echo "usage: $0 [PATH]";
+        echo "  lists all directories in PATH sorted by size";
+        echo "  if PATH is not defined, the current directory is used";
+        exit 1
+    fi
+
+    CURRENT_DIR=$(pwd)
+    cd "$@" && du -sm ./* | sort -nr | awk '{ printf "%-12s %-50s\n", $1 "MB", $2 }' | head -n 100
+    cd "$CURRENT_DIR"
 }
 
+# Finds directories exceeding 20MB (default threshold), listing their size and the modification time of their largest file.
+# It leverages "find", "du", and "stat" for comprehensive directory analysis.
+hf() {
+    # Default size threshold is 20M
+    size_threshold="20M"
+    
+    # Process arguments
+    for arg in "$@"; do
+        case $arg in
+            --help)
+                echo "Usage: hf [--size SIZE] [DIRECTORY]"
+                echo "Finds directories larger than specified size (default 20M) and lists their size and modification time of their largest file."
+                return
+                ;;
+            --size)
+                size_threshold="${2}"
+                shift # Remove --size
+                shift # Remove size value from processing
+                ;;
+            *)
+                dir="${arg:-.}"
+                ;;
+        esac
+    done
+
+    if [ ! -d "$dir" ]; then
+        echo "wrong input directory"
+        return 1
+    fi
+
+    # Convert size threshold to kilobytes for comparison
+    size_kb=$(echo $size_threshold | awk '/[0-9]$/{print $1*1024;next};/[Mm]$/{print substr($1,1,length($1)-1)*1024;next};/[Gg]$/{print substr($1,1,length($1)-1)*1024*1024}')
+    
+    find "$dir" -mindepth 1 -type d -exec sh -c 'size=$(du -sk "$1" 2>/dev/null | cut -f1); if [ "$size" -ge '"$size_kb"' ]; then mod_time=$(find "$1" -type f -size +1M -exec stat -c "%y" {} \; 2>/dev/null | sort -r | head -n1 | cut -d. -f1); [ -z "$mod_time" ] && mod_time="N/A"; printf "%-16s %-80s %-20s\n" "$(du -sh "$1" 2>/dev/null | cut -f1)" "$1" "$mod_time"; fi' sh {} \; 2>/dev/null | awk '!seen[$2]++' | sort -rh
+}
+
+# Displays disk usage for filesystems of specific types (ext4, xfs, etc.), formatted for easy reading.
+# Uses df and awk for formatted output.
+mdf() {
+    if [[ "$1" == "--help" ]]; then
+        echo "Usage: mdf"
+        echo "Displays disk usage for specific filesystem types, formatted for easy reading."
+        return
+    fi
+
+    df -hT | awk 'BEGIN {printf "%-20s %-12s %-8s %-12s %-6s %-20s\n", "Filesystem", "Total Size", "Used", "Available", "Use%", "Mounted on"} $2 ~ /(ext4|ext3|ext2|xfs|btrfs|zfs|f2fs|fat|fat32|ntfs)/ {printf "%-20s %-12s %-8s %-12s %-6s %-20s\n", $1, $3, $4, $5, $6, $7}'
+}
+
+# Needed for nvm to work properly
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion

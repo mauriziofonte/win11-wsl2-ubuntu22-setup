@@ -1,8 +1,8 @@
-# Setup manuale stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 22.04 (senza Microsoft Store)
+# Setup manuale Docker / Stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 22.04 (senza Microsoft Store)
 
-> Ultimo aggiornamento: _04/09/2023_. Versione target Ubuntu: 22.04.03
+> Ultimo aggiornamento: _20/02/2024_. Versione target Ubuntu: 22.04.03
 
-Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 22.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_) e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
+Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 22.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_), installare Docker, e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
 
 ## Requisiti
 
@@ -159,7 +159,19 @@ wsl --shutdown
 
 Dopodichè, riavviare la macchina Ubuntu.
 
+## Step 0 - Installare Docker Desktop su Windows 11
+
+> Nota: se non si intende utilizzare Docker Desktop, si può saltare questo step, e procedere con lo **Step 1** [Configurare l'ambiente LAMP su Ubuntu](#step-1---configurare-lambiente-lamp-su-ubuntu)
+
+Per poter utilizzare Docker Desktop su Windows 11, è necessario avere un processore con supporto a **Virtualizzazione** e **Hyper-V**. Se non si è sicuri di avere queste funzionalità abilitate, è possibile verificarle tramite il **Task Manager** di Windows.
+
+Per installare Docker Desktop, scaricare il file di installazione da [https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe). Seguire le istruzioni di installazione.
+
+Al termine dell'installazione, **Riavviare il PC**.
+
 ## Step 1 - Configurare l'ambiente LAMP su Ubuntu
+
+> Nota: se non si intende configurare l'ambiente LAMP, poichè il sistema Ubuntu verrà principalmente usato con Docker, si possono saltare gli step **1, 2, e 3** e procedere dallo **Step 4** [Installare una shell custom, NVM, e ottimizzare l'esperienza utente (opzionale)](#step-4---installare-una-shell-custom-nvm-e-ottimizzare-lesperienza-utente-opzionale)
 
 Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 e 8.3. Abiliteremo anche il **web server Apache** e il server **Mysql**.
 
@@ -544,6 +556,8 @@ Questi step **sono opzionali** e servono ad ottimizzare l'esperienza utente sull
 3. Creare una coppia di chiavi pubblica/privata con il comando `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/nome_chiave -C "utente@computer"` (comunicare il contenuto della chiave pubblica `~/.ssh/nome_chiave.pub`al proprio team, che la userà per esempio per abilitare l'accesso ad un repository GIT privato.)
 4. Creare un collegamento alla **home directory di Ubuntu** raggiungibile dal proprio _Desktop_ per visualizzare la home di Ubuntu tramite l'Esplora risorse di Windows: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `\\wsl$\Ubuntu-22.04\home\NOME_UTENTE`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico))
 5. Creare un collegamento alla _Bash_ di Ubuntu raggiungibile dal proprio _Desktop_ per avviare un nuovo terminale: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `C:\Windows\System32\wsl.exe -d Ubuntu-22.04 bash -c "cd /home/NOME_UTENTE && bash"`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-icon.ico](/icons/ubuntu-icon.ico))
+
+> In ultimo, dare un'occhiata al file [confs/bash_local](/confs/bash_local) per vedere come ho configurato la mia bash. Questo file può essere copiato nella propria home directory di Ubuntu, e rinominato in `.bash_local` per applicare le stesse configurazioni.
 
 ## Step 5 - Installare VS Code per accedere ai file di progetto su WSL2
 

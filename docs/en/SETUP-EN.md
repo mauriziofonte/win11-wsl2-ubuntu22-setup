@@ -1,8 +1,8 @@
-# Manual LAMP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 22.04 (without Microsoft Store)
+# Manual Docker / LAMP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 22.04 (without Microsoft Store)
 
-> Last updated at: _2023-09-04_. Target Ubuntu version: 22.04.03
+> Last updated at: _2024-02-20_. Target Ubuntu version: 22.04.03
 
-This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 22.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP** stack (with native services through _systemd_), and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
+This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 22.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP** stack (with native services through _systemd_), install Docker, and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
 
 ## System Requirements
 
@@ -158,7 +158,19 @@ wsl --shutdown
 
 Then, restart the Ubuntu machine.
 
+## Step 0 - Installing Docker Desktop on Windows 11
+
+> Note: If you do not plan to use Docker Desktop, you can skip this step and proceed to **Step 1** [Configure the LAMP Environment on Ubuntu](#step-1---configure-the-lamp-environment-on-ubuntu)
+
+To use Docker Desktop on Windows 11, your processor must support **Virtualization** and **Hyper-V**. If you're not sure whether these features are enabled, you can check through Windows' **Task Manager**.
+
+To install Docker Desktop, download the installation file from [https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe) and follow the installation instructions.
+
+After installation, **Restart your PC**.
+
 ## Step 1 - Configure the LAMP Environment on Ubuntu
+
+> Note: If you do not intend to set up the LAMP environment, as the Ubuntu system will mainly be used with Docker, you can skip steps **1, 2, and 3** and proceed to **Step 4** [Install a Custom Shell, NVM, and Optimize User Experience (Optional)](#step-4---install-a-custom-shell-nvm-and-optimize-user-experience-optional)
 
 Here, we will install all the system services and executables to enable support for **PHP** versions 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 and 8.3. We will also enable the **Apache web server** and the **MySQL server**.
 
@@ -538,6 +550,8 @@ These steps **are optional** and aim to optimize the user experience on the Linu
 3. Create a public/private key pair with the command `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/key_name -C "user@computer"` (share the content of the public key `~/.ssh/key_name.pub` with your team, which will use it, for example, to enable access to a private GIT repository).
 4. Create a link to the **Ubuntu home directory** accessible from your _Desktop_ to view Ubuntu's home via Windows Explorer: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `\\wsl$\Ubuntu-22.04\home\USERNAME`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico)).
 5. Create a link to Ubuntu's _Bash_ accessible from your _Desktop_ to launch a new terminal: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `C:\Windows\System32\wsl.exe -d Ubuntu-22.04 bash -c "cd /home/USERNAME && bash"`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-icon.ico](/icons/ubuntu-icon.ico)).
+
+> Finally, take a look at the file [confs/bash_local](/confs/bash_local) to see how I configured my bash. This file can be copied to your own Ubuntu home directory and renamed to .bash_local to apply the same configurations.
 
 ### Step 5 - Install VS Code to Access Project Files on WSL2
 
