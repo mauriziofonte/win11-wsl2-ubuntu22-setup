@@ -1,23 +1,23 @@
-# Manual Docker / LAMP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 22.04 (without Microsoft Store)
+# Manual Docker / LAMP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 24.04 (without Microsoft Store)
 
-> Last updated at: _2024-02-20_. Target Ubuntu version: 22.04.03
+> Last updated at: _2024-10-25_. Target Ubuntu version: **24.04.1**
 
-This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 22.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP** stack (with native services through _systemd_), install Docker, and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
+This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 24.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP** stack (with native services through _systemd_), install Docker, and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
 
 ## System Requirements
 
 1. Computer with **Windows 11**, preferably updated through Windows Update
 2. 16GB of RAM
-3. At least 50GB of free space on C:\\ (it will contain the Ubuntu 22.04 virtual disk)
+3. At least 50GB of free space on C:\\ (it will contain the Ubuntu 24.04 virtual disk)
 4. An SSD (better if NVMe) as the main Windows disk
 5. A _medium-level_ knowledge of the Linux terminal (such as how to use and what basic commands like _cd_, _cp_, _mv_, _sudo_, _nano_, etc.)
 6. Your computer **should be password protected, use BitLocker, and have support for TPM 2.0** to prevent malicious access to sensitive information, if someone were to gain possession of your device. **This is particularly important if you intend to handle information on behalf of others (work)**. Your security policies on the network and the devices you use should be appropriate for the type of PC use you intend to carry out. Generally, _if you use your PC for work, you need to pay utmost attention to protection_. Prevention is better than cure.
 
 The **LAMP** stack we're going to configure supports **https** (with self-signed certificates expiring in 30 years), **http/2** protocol, and **brotli compression**. As for the PHP part, we'll use **PHP-FPM** because it's more performant and more versatile in configuring _per-virtualhost_ settings. To understand the differences between using PHP with Apache in PHP-CGI mode versus PHP-FPM, refer to this guide: <https://www.basezap.com/difference-php-cgi-php-fpm/>
 
-## Installing Ubuntu 22.04 LTS on Windows in WSL2 Virtualization
+## Installing Ubuntu 24.04 LTS on Windows in WSL2 Virtualization
 
-To install Ubuntu 22.04 on Windows 11, we'll only use Windows' _PowerShell_, without resorting to the _Microsoft Store_. Important: **ensure to start PowerShell in administrator mode**.
+To install Ubuntu 24.04 on Windows 11, we'll only use Windows' _PowerShell_, without resorting to the _Microsoft Store_. Important: **ensure to start PowerShell in administrator mode**.
 
 First, **download and install** <https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi>. This is important. It's an additional package that installs the _Linux Kernel Update_, necessary for compatibility with WSL2.
 
@@ -61,7 +61,7 @@ Debian                                 Debian GNU/Linux
 kali-linux                             Kali Linux Rolling
 Ubuntu-18.04                           Ubuntu 18.04 LTS
 Ubuntu-20.04                           Ubuntu 20.04 LTS
-Ubuntu-22.04                           Ubuntu 22.04 LTS
+Ubuntu-24.04                           Ubuntu 24.04 LTS
 OracleLinux_7_9                        Oracle Linux 7.9
 OracleLinux_8_7                        Oracle Linux 8.7
 OracleLinux_9_1                        Oracle Linux 9.1
@@ -71,10 +71,10 @@ SUSE-Linux-Enterprise-15-SP5           SUSE Linux Enterprise 15 SP5
 openSUSE-Tumbleweed                    openSUSE Tumbleweed
 ```
 
-We are interested in the **Ubuntu-22.04** distribution. So, run this command on a _PowerShell_ **elevated to administrator privileges**:
+We are interested in the **Ubuntu-24.04** distribution. So, run this command on a _PowerShell_ **elevated to administrator privileges**:
 
 ```cmd
-wsl --install -d Ubuntu-22.04
+wsl --install -d Ubuntu-24.04
 ```
 
 At the end of the installation, without any errors, the newly installed Ubuntu machine instance will automatically open. The Ubuntu system will ask you to set a **username** _(be careful, it's needed below and is important)_ -- I recommend using a single short word all in lowercase -- and to **specify a password** for this user -- I recommend using a single letter, for convenience when running commands as `sudoer` --
@@ -83,7 +83,7 @@ At the end of the installation, without any errors, the newly installed Ubuntu m
 
 To permanently resolve the issue of DNS domain name resolution on Ubuntu via WSL2, follow these instructions. The procedure will require the use of both Ubuntu's bash and a _PowerShell_ **elevated to administrator privileges**:
 
-**On Ubuntu 22.04**
+**On Ubuntu 24.04**
 
 ```bash
 sudo su -
@@ -94,10 +94,10 @@ echo "generateResolvConf = false" | tee -a /etc/wsl.conf
 **On Windows, Powershell**
 
 ```cmd
-wsl --terminate Ubuntu-22.04
+wsl --terminate Ubuntu-24.04
 ```
 
-**On Ubuntu 22.04** (you'll need to restart it, as the previous command will have terminated it)
+**On Ubuntu 24.04** (you'll need to restart it, as the previous command will have terminated it)
 
 ```bash
 sudo su -
@@ -112,7 +112,7 @@ chattr +i /etc/resolv.conf
 **On Windows, Powershell**
 
 ```cmd
-wsl --terminate Ubuntu-22.04
+wsl --terminate Ubuntu-24.04
 Get-NetAdapter
 ```
 
@@ -136,7 +136,7 @@ So, note down the correct `ifIndex`, and run in _PowerShell_ **elevated to admin
 Set-NetIPInterface -InterfaceIndex [NUMERO_IFINDEX] -InterfaceMetric 6000
 ```
 
-With these instructions, the Ubuntu 22.04 machine should have no domain name resolution issues.
+With these instructions, the Ubuntu 24.04 machine should have no domain name resolution issues.
 
 ## Enable systemd on WSL2
 
@@ -166,20 +166,22 @@ To use Docker Desktop on Windows 11, your processor must support **Virtualizatio
 
 To install Docker Desktop, download the installation file from [https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe) and follow the installation instructions.
 
+> TL;DR: the important thing to use Docker inside WSL is **leave enabled** the option **Use WSL 2 based engine** in the Docker Setup, and in the Docker Desktop settings. Here's the full guide: [https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2](https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2)
+
 After installation, **Restart your PC**.
 
 ## Step 1 - Configure the LAMP Environment on Ubuntu
 
 > Note: If you do not intend to set up the LAMP environment, as the Ubuntu system will mainly be used with Docker, you can skip steps **1, 2, and 3** and proceed to **Step 4** [Install a Custom Shell, NVM, and Optimize User Experience (Optional)](#step-4---install-a-custom-shell-nvm-and-optimize-user-experience-optional)
 
-Here, we will install all the system services and executables to enable support for **PHP** versions 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 and 8.3. We will also enable the **Apache web server** and the **MySQL server**.
+Here, we will install all the system services and executables to enable support for **PHP** versions 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3 and 8.4. We will also enable the **Apache web server** and the **MySQL server**.
 
 **Why install so many PHP versions**? It's essential for two reasons:
 
 1. Having a **development environment** that easily allows **testing your application with various PHP versions**. This will facilitate the work in case of specific constraints on the production servers where the created applications will be installed.
 2. If a Client or a specific project requires you to **maintain and/or modify an old codebase that runs on a specific PHP version**, you won't have trouble setting up the local dev & test environment.
 
-> It is assumed that the default PHP version to be used in the system is **8.3**. This can be changed using the lines `update-alternatives --set php***` that will be found in the list below. For example, if you want the default PHP version (the one used when simply typing the command `php`, not its "versioned" command like `php7.4`), just specify `update-alternatives --set php /usr/bin/php7.4`. _(Anyway, this behavior will be modified with the Bash Aliases that we will configure later)_
+> It is assumed that the default PHP version to be used in the system is **8.4**. This can be changed using the lines `update-alternatives --set php***` that will be found in the list below. For example, if you want the default PHP version (the one used when simply typing the command `php`, not its "versioned" command like `php7.4`), just specify `update-alternatives --set php /usr/bin/php7.4`. _(Anyway, this behavior will be modified with the Bash Aliases that we will configure later)_
 
 **IMPORTANT**: Run all these commands as the `root` user on Ubuntu (use the command `sudo su -`). **IMPORTANT**: Exclude the lines starting with **#** as they only serve to differentiate the various blocks.
 
@@ -187,13 +189,17 @@ Here, we will install all the system services and executables to enable support 
 # APACHE + Multi-PHP-FPM + Redis
 sudo su -
 apt update && apt upgrade
-apt install -y net-tools zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+apt install -y curl net-tools zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-11.4"
+sudo install -d /usr/share/postgresql-common/pgdg
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
 apt update && apt upgrade
-PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+PHPVERS="8.4 8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
 PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
-APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do if [ "$VER" = "8.3" -a "$MOD" = "mcrypt" ]; then continue; fi; echo -n "php$VER-$MOD "; done; done)
+APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do if [[ "$MOD" == "mcrypt" && "${VER/./}" -ge 83 ]]; then continue; fi; echo -n "php$VER-$MOD "; done; done)
 apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
 a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
 a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
@@ -203,9 +209,9 @@ systemctl enable apache2.service
 systemctl restart apache2.service
 systemctl enable redis-server.service
 systemctl start redis-server.service
-update-alternatives --set php /usr/bin/php8.3
-update-alternatives --set phar /usr/bin/phar8.3
-update-alternatives --set phar.phar /usr/bin/phar.phar8.3
+update-alternatives --set php /usr/bin/php8.4
+update-alternatives --set phar /usr/bin/phar8.4
+update-alternatives --set phar.phar /usr/bin/phar.phar8.4
 
 # MYSQL
 sudo su -
@@ -220,9 +226,18 @@ type in "YOUR-ROOT-PASS" (the one you choose above)
 > GRANT ALL ON *.* TO 'admin'@'127.0.0.1' IDENTIFIED BY 'YOUR-ADMIN-PASS' WITH GRANT OPTION;
 > FLUSH PRIVILEGES;
 > exit
+
+# POSTGRESQL
+sudo su postgres
+psql
+> ALTER USER postgres WITH PASSWORD 'YOUR-POSTGRES-PASS';
+> CREATE USER admin WITH PASSWORD 'YOUR-ADMIN-PASS';
+> ALTER USER admin WITH SUPERUSER;
+> \q
+exit
 ```
 
-Once these commands are executed, all the necessary services and executables will be installed to create a LAMP (Linux, Apache, MySQL, PHP) stack in multi-PHP mode (multiple PHP versions) with PHP-FPM to enhance performance.
+Once these commands are executed, all the necessary services and executables will be installed to create a LAMP stack with MySQL and PostgreSQL in multi-PHP mode (multiple PHP versions) with PHP-FPM to enhance performance.
 
 > Note: The MySQL queries related to the **username and password** (_admin_ and _YOUR-ADMIN-PASS_) to be created as a privileged user can be changed at will. In the example above, a user with the username `admin` and password `YOUR-ADMIN-PASS` is created. It should be noted that **we are configuring a local development environment**, and as long as this environment is not exposed on the internet, we don't have to worry about particular policies regarding usernames and password complexity. However, I want to emphasize that using "easily guessable" usernames and "well-known" passwords is a **bad practice**.
 
@@ -407,7 +422,7 @@ echo 'export PATH="$(composer config -g home)/vendor/bin:$PATH"' >> ~/.bashrc
 ```
 
 > **NOTE**: To keep these packages updated, simply run `composer global update`
-> **WARNING**: The installation directory for packages on **Ubuntu 22.04** will be `~/.config/composer`, not `~/.composer` as one might expect: [here's the explanation](https://stackoverflow.com/a/38746307/1916292).
+> **WARNING**: The installation directory for packages on **Ubuntu 24.04** will be `~/.config/composer`, not `~/.composer` as one might expect: [here's the explanation](https://stackoverflow.com/a/38746307/1916292).
 
 ### Configuring Bash Aliases
 
@@ -416,13 +431,14 @@ Now that we have everything installed, all that remains is to create some _Bash 
 Launch `nano .bash_aliases` (or `vim .bash_aliases`) and paste these aliases:
 
 ```txt
-alias hte="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-create="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-remove="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
-alias hte-details="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
+alias hte="sudo /usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-create="sudo /usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
+alias hte-remove="sudo /usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
+alias hte-details="sudo /usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
 alias composer-self-update="sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update"
 alias composer-packages-update="composer global update"
-alias composer="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer84="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
@@ -434,7 +450,8 @@ alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /u
 alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias php="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php84="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
@@ -459,8 +476,8 @@ With this `.bash_aliases` configuration, we have:
 1. Aliased the `HTE-Cli` tool (which, remember, manages the VirtualHosts on the system) with 4 different commands: `hte`, `hte-create`, `hte-remove`, `hte-details`.
 2. Created an alias to **update the Composer binaries** (installed as system binaries on `/usr/local/bin`) with the command `composer-self-update`. This alias will update both _Composer 2_ and _Composer 1_ at once.
 3. Created an alias to **update globally installed Composer packages** with the command `composer-packages-update`.
-4. Created various aliases for the _flavors_ of `Composer` usage corresponding to the target PHP versions installed on the system. In short, the `composer` command will use **PHP 8.3**, `composer82` will use **PHP 8.2**, `composer81` will use **PHP 8.1**, and so on, down to `composer72` using **PHP 7.2**. Similarly, to use the **old Composer 1** for legacy projects, just use `1composer72`, `1composer71`, `1composer70`, or `1composer56`.
-5. Created various aliases to call the `PHP` binary on all versions installed on the system, so `php` will use **PHP 8.3**, `php82` will use **PHP 8.2**, and so on down to `php56` using **PHP 5.6**.
+4. Created various aliases for the _flavors_ of `Composer` usage corresponding to the target PHP versions installed on the system. In short, the `composer` command will use **PHP 8.4**, `composer83` will use **PHP 8.3**, `composer82` will use **PHP 8.2**, and so on, down to `composer72` using **PHP 7.2**. Similarly, to use the **old Composer 1** for legacy projects, just use `1composer72`, `1composer71`, `1composer70`, or `1composer56`.
+5. Created various aliases to call the `PHP` binary on all versions installed on the system, so `php` will use **PHP 8.4**, `php83` will use **PHP 8.3**, and so on down to `php56` using **PHP 5.6**.
 6. Ensured that both `composer` and `php` aliases work with two specific configurations: `allow_url_fopen` set to _1_, or active, and `memory_limit` set to _1024M_.
 7. Created an alias to reset the Ubuntu virtual machine with the command `wslrestart`.
 
@@ -498,7 +515,7 @@ WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/fire
  💡 Enter a valid directory in the filesystem for the DocumentRoot [/home/maurizio]:
  > /home/maurizio/opt/phpmyadmin/
 
- 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.3) [8.3]:
+ 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3, 8.4) [8.4]:
  > 8.3
 
  💡 Do you need HTTPS support? ["yes", "no", "y" or "n"] [y]:
@@ -543,15 +560,17 @@ To create additional VirtualHosts for other projects, **always use the same inst
 
 ## Step 4 - Install a Custom Shell, NVM, and Optimize User Experience (Optional)
 
-These steps **are optional** and aim to optimize the user experience on the Linux command console (according to my personal preferences), as well as install `nvm` (_Node Version Manager_, for working with _Node_, _React_, etc.).
+These steps **are optional** and aim to optimize the user experience on the Linux Bash (according to my personal preferences), as well as install `nvm` (_Node Version Manager_, for working with _Node_, _React_, etc.).
 
-1. Follow the installation instructions at `https://github.com/slomkowski/bash-full-of-colors` (or install _ZSH_, or any other shell of your preference: I find this super minimal colored bash very suitable, and my personal opinion is that having less help on the bash is a great way to keep focused). Here's a one-liner to install _Bash full of colors_: `cd ~/ ; git clone https://github.com/slomkowski/bash-full-of-colors.git .bash-full-of-colors ; [ -f .bashrc ] && mv -v .bashrc bashrc.old ; [ -f .bash_profile ] && mv -v .bash_profile bash_profile.old ; [ -f .bash_aliases ] && mv -v .bash_aliases bash_aliases.old ; [ -f .bash_logout ] && mv -v .bash_logout bash_logout.old ; ln -s .bash-full-of-colors/bashrc.sh .bashrc ; ln -s .bash-full-of-colors/bash_profile.sh .bash_profile ; ln -s .bash-full-of-colors/bash_aliases.sh .bash_aliases ; ln -s .bash-full-of-colors/bash_logout.sh .bash_logout ; rm -f bash_logout.old ; rm -f bashrc.old ; rm -f bash_aliases.old`
-2. Run `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash` to install NVM (for NodeJS/React development).
+My recommendation for beginners is to install the **Gash** Bash, which is a minimal, colored Bash that works well with _git_ and has a full set of powerful aliases that suit well for this exact LAMP environment. Plus, _Gash_ it's a creation of mine. If you prefer to use _ZSH_, or any other custom shell, or don't bother with this step, feel free to skip it.
+
+1. Follow the installation instructions to install the **Gash** Bash at [https://github.com/mauriziofonte/gash](https://github.com/mauriziofonte/gash) (or install _ZSH_, or any other shell of your preference: I find this super minimal colored bash very suitable, and my personal opinion is that having less help on the bash is a great way to keep focused). Here's a one-liner to install _Gash_: `wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash`
+2. Run `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash` to install NVM (for NodeJS/React development).
 3. Create a public/private key pair with the command `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/key_name -C "user@computer"` (share the content of the public key `~/.ssh/key_name.pub` with your team, which will use it, for example, to enable access to a private GIT repository).
-4. Create a link to the **Ubuntu home directory** accessible from your _Desktop_ to view Ubuntu's home via Windows Explorer: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `\\wsl$\Ubuntu-22.04\home\USERNAME`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico)).
-5. Create a link to Ubuntu's _Bash_ accessible from your _Desktop_ to launch a new terminal: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `C:\Windows\System32\wsl.exe -d Ubuntu-22.04 bash -c "cd /home/USERNAME && bash"`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-icon.ico](/icons/ubuntu-icon.ico)).
+4. Create a link to the **Ubuntu home directory** accessible from your _Desktop_ to view Ubuntu's home via Windows Explorer: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `\\wsl$\Ubuntu-24.04\home\USERNAME`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico)).
+5. Create a link to Ubuntu's _Bash_ accessible from your _Desktop_ to launch a new terminal: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `C:\Windows\System32\wsl.exe -d Ubuntu-24.04 bash -c "cd /home/USERNAME && bash"`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-icon.ico](/icons/ubuntu-icon.ico)).
 
-> Finally, take a look at the file [confs/bash_local](/confs/bash_local) to see how I configured my bash. This file can be copied to your own Ubuntu home directory and renamed to .bash_local to apply the same configurations.
+> Note: if you decided **not** to install the _Gash Bash_, I suggest to have a look at the [confs/bash_local](/confs/bash_local) file, which contains a set of useful aliases and configurations you can add to your `.bash_aliases` file (or to your own preferred shell configuration file).
 
 ### Step 5 - Install VS Code to Access Project Files on WSL2
 
@@ -586,7 +605,7 @@ To install each plugin, press `CTRL + SHIFT + x` and search for the plugin name.
 7. Search for **markdownlint** and install the plugin by **David Anson**, [https://github.com/DavidAnson/vscode-markdownlint](https://github.com/DavidAnson/vscode-markdownlint)
 8. Search for **Material Icon Theme** and install the plugin by **Philipp Kief**, [https://github.com/PKief/vscode-material-icon-theme](https://github.com/PKief/vscode-material-icon-theme)
 
-After installing all the plugins, press `CTRL + SHIFT + p`, type **JSON**, and select **Preferences: Open Remote Settings (JSON) (WSL: Ubuntu-22.04)**
+After installing all the plugins, press `CTRL + SHIFT + p`, type **JSON**, and select **Preferences: Open Remote Settings (JSON) (WSL: Ubuntu-24.04)**
 
 Then, copy-paste the JSON configuration shown in [vscode.json](/confs/vscode.json), replacing `##LINUX_USERNAME##` with your Ubuntu username.
 

@@ -1,23 +1,23 @@
-# Setup manuale Docker / Stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 22.04 (senza Microsoft Store)
+# Setup manuale Docker / Stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 24.04 (senza Microsoft Store)
 
-> Ultimo aggiornamento: _20/02/2024_. Versione target Ubuntu: 22.04.03
+> Ultimo aggiornamento: _25/10/2024_. Versione target Ubuntu: **24.04.1**
 
-Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 22.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_), installare Docker, e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
+Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 24.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_), installare Docker, e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
 
 ## Requisiti
 
 1. Computer con **Windows 11**, preferibilmente aggiornato tramite Windows Update
 2. 16GB di RAM
-3. Almeno 50GB di spazio libero su C:\ (conterrà il disco virtuale di Ubuntu 22.04)
+3. Almeno 50GB di spazio libero su C:\ (conterrà il disco virtuale di Ubuntu 24.04)
 4. Un SSD (meglio se NVMe) come disco principale di Windows
 5. Una conoscenza di _medio livello_ del terminale Linux (come usare e cosa sono comandi di base come _cd_, _cp_, _mv_, _sudo_, _nano_, etc.)
 6. Il vostro computer **dovrebbe essere protetto da password, usare BitLocker, e disporre di supporto a TPM 2.0** per evitare che malintenzionati possano accedere ad informazioni sensibili, se entrassero in possesso del vostro dispositivo. **Questo è particolarmente importante se intendete maneggiare informazioni per conto terzi (lavoro)**. Le vostre politiche di sicurezza sulla rete e i dispositivi che utilizzate dovrebbero essere consone al tipo di uso del PC che intendete effettuare. In linea generale, _se usate il vostro PC per lavoro, bisogna porre massima attenzione alla protezione_. Prevenire è meglio che curare.
 
 Lo stack **LAMP** che andremo a configurare supporta **https** (con certificati autofirmati con scadenza a 30 anni), protocollo **http/2** e **compressione brotli**. Per quanto riguarda la parte PHP, useremo **PHP-FPM** perchè è più performante e più versatile nella configurazione delle impostazioni _per-virtualhost_. Per capire le differenze tra l'utilizzo di PHP con Apache in modalità PHP-CGI piuttosto che PHP-FPM, si rimanda a questa guida: <https://www.basezap.com/difference-php-cgi-php-fpm/>
 
-## Installare Ubuntu 22.04 LTS su Windows in virtualizzazione WSL2
+## Installare Ubuntu 24.04 LTS su Windows in virtualizzazione WSL2
 
-Per installare Ubuntu 22.04 su Windows 11, useremo solo la _PowerShell_ di Windows, senza ricorrere al _Microsoft Store_. Importante: **assicurarsi di avviare la powershell in modalità amministratore**.
+Per installare Ubuntu 24.04 su Windows 11, useremo solo la _PowerShell_ di Windows, senza ricorrere al _Microsoft Store_. Importante: **assicurarsi di avviare la powershell in modalità amministratore**.
 
 Per prima cosa, **scaricare ed installare** <https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi>. Questo è importante. E' un pacchetto aggiuntivo che installa l'aggiornamento _Linux Kernel Update_, necessario per compatibilità con WSL2.
 
@@ -61,7 +61,7 @@ Debian                                 Debian GNU/Linux
 kali-linux                             Kali Linux Rolling
 Ubuntu-18.04                           Ubuntu 18.04 LTS
 Ubuntu-20.04                           Ubuntu 20.04 LTS
-Ubuntu-22.04                           Ubuntu 22.04 LTS
+Ubuntu-24.04                           Ubuntu 24.04 LTS
 OracleLinux_7_9                        Oracle Linux 7.9
 OracleLinux_8_7                        Oracle Linux 8.7
 OracleLinux_9_1                        Oracle Linux 9.1
@@ -71,10 +71,10 @@ SUSE-Linux-Enterprise-15-SP5           SUSE Linux Enterprise 15 SP5
 openSUSE-Tumbleweed                    openSUSE Tumbleweed
 ```
 
-Noi siamo interessati alla distribuzione **Ubuntu-22.04**. Quindi, eseguire questo comando su una _PowerShell_ **elevata a privilegi di amministratore**:
+Noi siamo interessati alla distribuzione **Ubuntu-24.04**. Quindi, eseguire questo comando su una _PowerShell_ **elevata a privilegi di amministratore**:
 
 ```cmd
-wsl --install -d Ubuntu-22.04
+wsl --install -d Ubuntu-24.04
 ```
 
 Al termine dell'installazione, in assenza di errori, verrà automaticamente aperta l'istanza della macchina Ubuntu appena installata. Il sistema Ubuntu richiederà di impostare un **nome utente** _(occhio, serve sotto ed è importante)_ -- consiglio di usare una singola parola corta digitata tutta in minuscolo -- e di **specificare una password** per questo utente -- consiglio di usare una sola lettera, per comodità quando si eseguiranno comandi da `sudoer` --
@@ -83,7 +83,7 @@ Al termine dell'installazione, in assenza di errori, verrà automaticamente aper
 
 Per risolvere permanentemente il problema della risoluzione nomi dominio DNS di Ubuntu via WSL2, seguire queste istruzioni. La procedura richiederà sia l'utilizzo della bash di Ubuntu, sia una _PowerShell_ **elevata a privilegi di amministratore**:
 
-**Su Ubuntu 22.04**
+**Su Ubuntu 24.04**
 
 ```bash
 sudo su -
@@ -94,10 +94,10 @@ echo "generateResolvConf = false" | tee -a /etc/wsl.conf
 **Su Windows, Powershell**
 
 ```cmd
-wsl --terminate Ubuntu-22.04
+wsl --terminate Ubuntu-24.04
 ```
 
-**Su Ubuntu 22.04** (da avviare nuovamente, perchè il comando precedente lo avrà terminato)
+**Su Ubuntu 24.04** (da avviare nuovamente, perchè il comando precedente lo avrà terminato)
 
 ```bash
 sudo su -
@@ -112,7 +112,7 @@ chattr +i /etc/resolv.conf
 **Su Windows, Powershell**
 
 ```cmd
-wsl --terminate Ubuntu-22.04
+wsl --terminate Ubuntu-24.04
 Get-NetAdapter
 ```
 
@@ -136,7 +136,7 @@ Quindi, prendere nota del `ifIndex` corretto, ed eseguire una _PowerShell_ **ele
 Set-NetIPInterface -InterfaceIndex [NUMERO_IFINDEX] -InterfaceMetric 6000
 ```
 
-Con queste istruzioni la macchina Ubuntu 22.04 non dovrebbe avere nessun problema di risoluzione nomi a dominio.
+Con queste istruzioni la macchina Ubuntu 24.04 non dovrebbe avere nessun problema di risoluzione nomi a dominio.
 
 ## Abilitare systemd su WSL2
 
@@ -167,20 +167,22 @@ Per poter utilizzare Docker Desktop su Windows 11, è necessario avere un proces
 
 Per installare Docker Desktop, scaricare il file di installazione da [https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe). Seguire le istruzioni di installazione.
 
+> TL;DR: la cosa importante per poter usare correttamente Docker dentro WSL è **lasciare abilitata** l'opzione **Use WSL 2 based engine** durante l'installazione di Docker Desktop, e nelle impostazioni di Docker Desktop. Qui la guida completa: [https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2](https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2)
+
 Al termine dell'installazione, **Riavviare il PC**.
 
 ## Step 1 - Configurare l'ambiente LAMP su Ubuntu
 
 > Nota: se non si intende configurare l'ambiente LAMP, poichè il sistema Ubuntu verrà principalmente usato con Docker, si possono saltare gli step **1, 2, e 3** e procedere dallo **Step 4** [Installare una shell custom, NVM, e ottimizzare l'esperienza utente (opzionale)](#step-4---installare-una-shell-custom-nvm-e-ottimizzare-lesperienza-utente-opzionale)
 
-Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2 e 8.3. Abiliteremo anche il **web server Apache** e il server **Mysql**.
+Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3 e 8.4. Abiliteremo anche il **web server Apache** e il server **Mysql**.
 
 **Perchè installare tante versioni di PHP**? E' importante per due motivi:
 
 1. avere a disposizione un **ambiente di sviluppo** che consenta, con facilità, di **testare la propria applicazione con svariate versioni di PHP**. Questo agevolerà il lavoro in caso di constraint specifici sui server di produzione dove andremo ad installare le applicazioni create.
 2. in caso un Cliente o un progetto specifico vi richieda di **mantenere e/o modificare una vecchia base di codice funzionante su una specifica versione di PHP**, non avrete difficoltà a rendere funzionante l'ambiente di dev&test in locale.
 
-> Si presume che la versione di default di PHP che si vorrà utilizzare nel sistema sia la **8.3**. Questo è modificabile tramite le righe `update-alternatives --set php***` che si troveranno nella lista qui sotto. Ad esempio, se si desidera che la versione di PHP di default (quella che verrà utilizzata digitando semplicemente il comando `php` e non la sua versione "versionata" es `php7.4`) basterà specificare `update-alternatives --set php /usr/bin/php7.4`. _(Ad ogni modo, questo comportamento verrà in ogni caso modificato con i Bash Alias che andremo a configurare più tardi)_
+> Si assume che la versione di default di PHP che si vorrà utilizzare nel sistema sia la **8.4**. Questo è modificabile tramite le righe `update-alternatives --set php***` che si troveranno nella lista qui sotto. Ad esempio, se si desidera che la versione di PHP di default (quella che verrà utilizzata digitando semplicemente il comando `php` e non la sua versione "versionata" es `php7.4`) basterà specificare `update-alternatives --set php /usr/bin/php7.4`. _(Ad ogni modo, questo comportamento verrà in ogni caso modificato con i Bash Alias che andremo a configurare più tardi)_
 
 **IMPORTANTE**: Lanciare tutti questi comando come l'utente `root` su Ubuntu (il comando `sudo su -`). **IMPORTANTE**: Escludere le linee che iniziano con **#** in quanto servono solo a differenziare i vari blocchi.
 
@@ -188,13 +190,17 @@ Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilit
 # APACHE + Multi-PHP-FPM + Redis
 sudo su -
 apt update && apt upgrade
-apt install -y net-tools zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+apt install -y curl net-tools zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-11.4"
+sudo install -d /usr/share/postgresql-common/pgdg
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
 LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/apache2
 apt update && apt upgrade
-PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+PHPVERS="8.4 8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
 PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
-APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do if [ "$VER" = "8.3" -a "$MOD" = "mcrypt" ]; then continue; fi; echo -n "php$VER-$MOD "; done; done)
+APTPACKS=$(for VER in $PHPVERS; do echo -n "libapache2-mod-php$VER php$VER "; for MOD in $PHPMODS; do if [[ "$MOD" == "mcrypt" && "${VER/./}" -ge 83 ]]; then continue; fi; echo -n "php$VER-$MOD "; done; done)
 apt install -y apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
 a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
 a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
@@ -204,9 +210,9 @@ systemctl enable apache2.service
 systemctl restart apache2.service
 systemctl enable redis-server.service
 systemctl start redis-server.service
-update-alternatives --set php /usr/bin/php8.3
-update-alternatives --set phar /usr/bin/phar8.3
-update-alternatives --set phar.phar /usr/bin/phar.phar8.3
+update-alternatives --set php /usr/bin/php8.4
+update-alternatives --set phar /usr/bin/phar8.4
+update-alternatives --set phar.phar /usr/bin/phar.phar8.4
 
 # MYSQL
 sudo su -
@@ -214,16 +220,25 @@ apt install mariadb-server
 systemctl enable mariadb.service
 systemctl start mariadb.service
 mysql_secure_installation
-[digitare questa sequenza di risposte: ENTER + n + Y + "YOUR-ROOT-PASS" + "YOUR-ROOT-PASS" + Y + Y + Y + Y]
+[type in this sequence of answers: ENTER + n + Y + "YOUR-ROOT-PASS" + "YOUR-ROOT-PASS" + Y + Y + Y + Y]
 mysql -u root -p
-DIGITARE "YOUR-ROOT-PASS"
+type in "YOUR-ROOT-PASS" (the one you choose above)
 > GRANT ALL ON *.* TO 'admin'@'localhost' IDENTIFIED BY 'YOUR-ADMIN-PASS' WITH GRANT OPTION;
 > GRANT ALL ON *.* TO 'admin'@'127.0.0.1' IDENTIFIED BY 'YOUR-ADMIN-PASS' WITH GRANT OPTION;
 > FLUSH PRIVILEGES;
 > exit
+
+# POSTGRESQL
+sudo su postgres
+psql
+> ALTER USER postgres WITH PASSWORD 'YOUR-POSTGRES-PASS';
+> CREATE USER admin WITH PASSWORD 'YOUR-ADMIN-PASS';
+> ALTER USER admin WITH SUPERUSER;
+> \q
+exit
 ```
 
-Eseguiti questi comandi, saranno installati tutti i servizi e gli eseguibili necessari per realizzare uno stack LAMP (Linux, Apache, Mysql, PHP) in modalità multi-PHP (multiple versioni di PHP) con PHP-FPM per incrementare le performance.
+Eseguiti questi comandi, saranno installati tutti i servizi e gli eseguibili necessari per realizzare uno stack LAMP con Mysql e PostgreSQL in modalità multi-PHP (multiple versioni di PHP) con PHP-FPM per incrementare le performance.
 
 > Nota: le query mysql relative allo **username e password** (_admin_ e _YOUR-ADMIN-PASS_) da creare come utente privilegiato possono essere modificate a piacimento.
 > Nell'esempio sopra riportato viene creato un utente con username `admin` e password `YOUR-ADMIN-PASS`. C'è da dire che **stiamo configurando un ambiente di sviluppo locale**, e fintanto che questo ambiente non viene esposto in internet, non dobbiamo preoccuparci di usare policy particolari riguardanti i nomi utente e la complessità delle password.
@@ -413,7 +428,7 @@ echo 'export PATH="$(composer config -g home)/vendor/bin:$PATH"' >> ~/.bashrc
 ```
 
 > **NOTA** : per mantenere questi pacchetti aggiornati, sarà sufficiente eseguire `composer global update`
-> **ATTENZIONE** : la directory di installazione dei pacchetti su **Ubuntu 22.04** sarà `~/.config/composer` e non `~/.composer` come ci si potrebbe aspettare: [qui la spiegazione](https://stackoverflow.com/a/38746307/1916292)
+> **ATTENZIONE** : la directory di installazione dei pacchetti su **Ubuntu 24.04** sarà `~/.config/composer` e non `~/.composer` come ci si potrebbe aspettare: [qui la spiegazione](https://stackoverflow.com/a/38746307/1916292)
 
 ### Configurare gli Alias Bash
 
@@ -504,7 +519,7 @@ WARNING: THIS TOOL IS *NOT* INTENDED FOR LIVE SERVERS. Use it only on local/fire
  💡 Enter a valid directory in the filesystem for the DocumentRoot [/home/maurizio]:
  > /home/maurizio/opt/phpmyadmin/
 
- 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3) [8.3]:
+ 💡 Enter a valid PHP version for PHP-FPM (5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3, 8.4) [8.4]:
  > 8.3
 
  💡 Do you need HTTPS support? ["yes", "no", "y" or "n"] [y]:
@@ -551,13 +566,15 @@ Per creare altri VirtualHost per altri progetti, **utilizzare sempre le stesse i
 
 Questi step **sono opzionali** e servono ad ottimizzare l'esperienza utente sulla console dei comandi di Linux (secondo le mie personali preferenze), oltre che ad installare `nvm` (_Node Version Manager_, per lavorare con _Node_, _React_, etc).
 
-1. Seguire le istruzioni di installazione di `https://github.com/slomkowski/bash-full-of-colors` (o installare _ZSH_, o qualunque altra shell di gradimento: io mi trovo bene con questa bash colorata super minimale, mia opinione personale è che avere meno aiuto possibile sulla bash sia un ottimo modo per non staccare la testa). Riporto un one-liner per installare _Bash full of colors_ `cd ~/ ; git clone https://github.com/slomkowski/bash-full-of-colors.git .bash-full-of-colors ; [ -f .bashrc ] && mv -v .bashrc bashrc.old ; [ -f .bash_profile ] && mv -v .bash_profile bash_profile.old ; [ -f .bash_aliases ] && mv -v .bash_aliases bash_aliases.old ; [ -f .bash_logout ] && mv -v .bash_logout bash_logout.old ; ln -s .bash-full-of-colors/bashrc.sh .bashrc ; ln -s .bash-full-of-colors/bash_profile.sh .bash_profile ; ln -s .bash-full-of-colors/bash_aliases.sh .bash_aliases ; ln -s .bash-full-of-colors/bash_logout.sh .bash_logout ; rm -f bash_logout.old ; rm -f bashrc.old ; rm -f bash_aliases.old`
-2. Lanciare `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash` per installare NVM (per sviluppo NodeJS/React)
-3. Creare una coppia di chiavi pubblica/privata con il comando `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/nome_chiave -C "utente@computer"` (comunicare il contenuto della chiave pubblica `~/.ssh/nome_chiave.pub`al proprio team, che la userà per esempio per abilitare l'accesso ad un repository GIT privato.)
-4. Creare un collegamento alla **home directory di Ubuntu** raggiungibile dal proprio _Desktop_ per visualizzare la home di Ubuntu tramite l'Esplora risorse di Windows: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `\\wsl$\Ubuntu-22.04\home\NOME_UTENTE`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico))
-5. Creare un collegamento alla _Bash_ di Ubuntu raggiungibile dal proprio _Desktop_ per avviare un nuovo terminale: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `C:\Windows\System32\wsl.exe -d Ubuntu-22.04 bash -c "cd /home/NOME_UTENTE && bash"`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-icon.ico](/icons/ubuntu-icon.ico))
+Il mio consiglio per i principianti è di installare la Bash **Gash**, che è una Bash minimale e colorata che funziona bene con _git_ e ha un set completo di potenti alias che si adattano bene a questo ambiente LAMP. Inoltre, _Gash_ è una mia creazione. Se preferite usare _ZSH_, o qualsiasi altra shell custom, o non vi interessa questo step, sentitevi liberi di saltarlo.
 
-> In ultimo, dare un'occhiata al file [confs/bash_local](/confs/bash_local) per vedere come ho configurato la mia bash. Questo file può essere copiato nella propria home directory di Ubuntu, e rinominato in `.bash_local` per applicare le stesse configurazioni.
+1. Seguire le istruzioni di installazione della Bash **Gash** qui [https://github.com/mauriziofonte/gash](https://github.com/mauriziofonte/gash) (o installare _ZSH_, o qualunque altra shell di gradimento: io mi trovo bene con questa bash colorata super minimale, mia opinione personale è che avere meno aiuto possibile sulla bash sia un ottimo modo per non staccare la testa). Riporto un one-liner per installare _Gash_: `wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash`
+2. Lanciare `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash` per installare NVM (per sviluppo NodeJS/React)
+3. Creare una coppia di chiavi pubblica/privata con il comando `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/nome_chiave -C "utente@computer"` (comunicare il contenuto della chiave pubblica `~/.ssh/nome_chiave.pub`al proprio team, che la userà per esempio per abilitare l'accesso ad un repository GIT privato.)
+4. Creare un collegamento alla **home directory di Ubuntu** raggiungibile dal proprio _Desktop_ per visualizzare la home di Ubuntu tramite l'Esplora risorse di Windows: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `\\wsl$\Ubuntu-24.04\home\NOME_UTENTE`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico))
+5. Creare un collegamento alla _Bash_ di Ubuntu raggiungibile dal proprio _Desktop_ per avviare un nuovo terminale: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `C:\Windows\System32\wsl.exe -d Ubuntu-24.04 bash -c "cd /home/NOME_UTENTE && bash"`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-icon.ico](/icons/ubuntu-icon.ico))
+
+> Nota: se hai deciso di **non** installare la _Gash Bash_, ti consiglio di dare un'occhiata al file [confs/bash_local](/confs/bash_local), che contiene un set di utili alias e configurazioni che puoi aggiungere al tuo file `.bash_aliases` (o al tuo file di configurazione della tua shell).
 
 ## Step 5 - Installare VS Code per accedere ai file di progetto su WSL2
 
@@ -594,7 +611,7 @@ Per ogni plugin, è sufficiente premere `CTRL + SHIFT + x` e digitare il nome de
 7. Cercare **markdownlint** e installare la versione del plugin di **David Anson**, <https://github.com/DavidAnson/vscode-markdownlint>
 8. Cercare **Material Icon Theme** e installare la versione del plugin di **Philipp Kief**, <https://github.com/PKief/vscode-material-icon-theme>
 
-Una volta installati tutti i plugin, premere la combinazione di tasti `CTRL + SHIFT + p`, digitare **JSON**, e selezionare su **Preferenze: Apri Impostazioni Remote (JSON) (WSL: Ubuntu-22.04)** (se la lingua di VS Code è inglese, bisognerà selezionare **Preferences: Open Remote Settings (JSON) (WSL: Ubuntu-22.04)**)
+Una volta installati tutti i plugin, premere la combinazione di tasti `CTRL + SHIFT + p`, digitare **JSON**, e selezionare su **Preferenze: Apri Impostazioni Remote (JSON) (WSL: Ubuntu-24.04)** (se la lingua di VS Code è inglese, bisognerà selezionare **Preferences: Open Remote Settings (JSON) (WSL: Ubuntu-24.04)**)
 
 A questo punto, copia-incollare la configurazione _JSON_ riportata nello snippet [vscode.json](/confs/vscode.json), modificando la variabile `##LINUX_USERNAME##` con il nome utente utilizzato su Ubuntu.
 

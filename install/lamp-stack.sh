@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
-# This script installs a LAMP stack on Ubuntu 22.04 LTS (Jammy Jellyfish)
-# with Apache + PHP + Redis + MySQL and multi-PHP versions support
+# This script installs a LAMP stack with MySQL and PostgreSQL stack on Ubuntu 24.04 LTS (Noble Numbat)
+# via custom repositories (Ondrej PHP/Apache, MariaDB, PostgreSQL)
+# PHP will be installed with multiple versions (8.4, 8.3, 8.2, 8.1, 8.0, 7.4, 7.3, 7.2, 7.1, 7.0, 5.6)
 # Apache will be configured to work with PHP-FPM
 #
 # Author: Maurizio Fonte (https://www.mauriziofonte.it)
-# Version: 1.1.0
+# Version: 1.2.0
 # Release Date: 2023-09-04
+# Last Update: 2024-10-25
 # License: MIT License
 #
 # If you find any issue, please report it on GitHub: https://github.com/mauriziofonte/win11-wsl2-ubuntu22-setup/issues
@@ -66,11 +68,20 @@
 
         # echo the header of the script
         ubwsl_echo info "*============================================================================*"
-        ubwsl_echo info "*  Ubuntu 22.04 LTS (Jammy Jellyfish) LAMP stack installer                   *"
+        ubwsl_echo info "*  Ubuntu 24.04 LTS (Noble Numbat) LAMP stack installer                   *"
         ubwsl_echo info "*                                                                            *"
-        ubwsl_echo info "*  Copyright (c) 2023 Maurizio Fonte https://www.mauriziofonte.it            *"
+        ubwsl_echo info "*  Copyright (c) 2024 Maurizio Fonte https://www.mauriziofonte.it            *"
+        ubwsl_echo info "*  Released under MIT License                                                *"
         ubwsl_echo info "*  Report bugs to github.com/mauriziofonte/win11-wsl2-ubuntu22-setup/issues  *"
         ubwsl_echo info "*============================================================================*"
+
+        # check if the file /etc/ubwsl-installed exists: if it does, then the script has already been executed
+        if [ -f /etc/ubwsl-installed ]; then
+            ubwsl_echo >&2 highlight "The LAMP stack has already been installed on this machine."
+            ubwsl_echo >&2 highlight "If you want to re-run the script, please remove the file /etc/ubwsl-installed and try again."
+            ubwsl_echo
+            exit 1
+        fi
 
         # save the username of the user that ran the script
         USERNAME=$(whoami | awk '{print $1}')
@@ -110,28 +121,44 @@
         ubwsl_echo
 
         # modify the APT config so that we are more lax on retries and timeouts
+        # this is useful for slow connections and for days where ppas and other extra repos are overwhelmed
         echo -e "Acquire::Retries \"50\";\nAcquire::https::Timeout \"240\";\nAcquire::http::Timeout \"240\";\n" | sudo tee /etc/apt/apt.conf.d/99-custom.conf >/dev/null
 
         # install apache + php + redis + mysql
-        ubwsl_echo info "Installing Apache + PHP + Redis + MySQL"
+        ubwsl_echo info "Installing Apache + PHP + Redis + MySQL + PostgreSQL"
+
+        # Update the system
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
-        sudo apt-get --assume-yes --quiet install net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+        # Install the required packages
+        sudo apt-get --assume-yes --quiet install curl net-tools expect zip unzip git redis-server lsb-release ca-certificates apt-transport-https software-properties-common
+        # Setup the MariaDB repository (11.4, EOL 29 May 2029)
+        curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-11.4"
+        # Setup the PGSQL repository
+        sudo install -d /usr/share/postgresql-common/pgdg
+        sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+        # Setup the Ondrej PHP/Apache repository
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/php
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
+        # Re-scan the repositories and immediately apply patches as per the new repositories
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
-        PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
+
+        # Setup the PHP versions
+        PHPVERS="8.4 8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
         PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
         APTPACKS=""
         for VER in $PHPVERS; do
             APTPACKS+="libapache2-mod-php$VER php$VER "
             for MOD in $PHPMODS; do
-                # mcrypt is not available for PHP 8.3
-                if [ "$VER" = "8.3" ] && [ "$MOD" = "mcrypt" ]; then
+                # Skip mcrypt for PHP 8.3 and later versions
+                if [[ "$MOD" == "mcrypt" && "${VER/./}" -ge 83 ]]; then
                     continue
                 fi
                 APTPACKS+="php$VER-$MOD "
             done
         done
+
+        # Install Apache and PHP
         sudo apt-get --assume-yes --quiet install apache2 brotli openssl libapache2-mod-fcgid $APTPACKS
         sudo a2dismod $(for VER in $PHPVERS; do echo -n "php$VER "; done) mpm_prefork
         sudo a2enconf $(for VER in $PHPVERS; do echo -n "php$VER-fpm "; done)
@@ -141,13 +168,17 @@
         sudo systemctl restart apache2.service
         sudo systemctl enable redis-server.service
         sudo systemctl start redis-server.service
-        sudo update-alternatives --set php /usr/bin/php8.3
-        sudo update-alternatives --set phar /usr/bin/phar8.3
-        sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.3
+        sudo update-alternatives --set php /usr/bin/php8.4
+        sudo update-alternatives --set phar /usr/bin/phar8.4
+        sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.4
 
-        sudo apt-get --assume-yes --quiet install mariadb-server
+        # Install MariaDB 11.4 - We've set the version in the repository setup
+        sudo apt-get --assume-yes --quiet install mariadb-server mariadb-client
         sudo systemctl enable mariadb.service
         sudo systemctl start mariadb.service
+
+        # Install PostgreSQL 16 (EOL 09 Nov 2028) - This time we're going to be explicit on the version number
+        sudo apt-get --assume-yes install postgresql-16 postgresql-client-16 postgresql-contrib-16
 
         # modify /etc/apache2/envvars so that APACHE_RUN_USER=$USERNAME and APACHE_RUN_GROUP=$USERNAME
         ubwsl_echo info "Modifying /etc/apache2/envvars"
@@ -312,10 +343,39 @@ EOF
             ubwsl_echo warning "Skipping the creation of a new /etc/mysql/mariadb.conf.d/99-custom.cnf file"
         fi
 
-        # restart services
+        # restart Apace and Mysql services
         ubwsl_echo info "Restarting Apache and Mysql services"
         sudo systemctl restart apache2.service
         sudo systemctl restart mariadb.service
+
+        # let's configure pgsql as well: if the file /home/$USERNAME/.pgsql-pass does not exist, then assign a password to the "postgres" user and create a new user "default"
+        ubwsl_echo info "Configuring PostgreSQL"
+        if [ ! -f /home/$USERNAME/.pgsql-pass ]; then
+            # create a password for the "postgres" user
+            PASS_PGSQL_POSTGRES=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+            # create a password for the "default" user
+            PASS_PGSQL_DEFAULT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+
+            # sudo as the postgres user to issue commands
+            sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$PASS_PGSQL_POSTGRES';" > /dev/null 2>&1
+            sudo -u postgres psql -c "CREATE USER default WITH PASSWORD '$PASS_PGSQL_DEFAULT';" > /dev/null 2>&1
+            sudo -u postgres psql -c "ALTER USER default WITH SUPERUSER;" > /dev/null 2>&1
+
+            # save the passwords to /home/$USERNAME/.pgsql-pass
+            echo "postgres:$PASS_PGSQL_POSTGRES" >/home/$USERNAME/.pgsql-pass
+            echo "default:$PASS_PGSQL_DEFAULT" >>/home/$USERNAME/.pgsql-pass
+            chown $USERNAME:$USERNAME /home/$USERNAME/.pgsql-pass
+            chmod 600 /home/$USERNAME/.pgsql-pass
+        else
+            # if the file /home/$USERNAME/.pgsql-pass exists, then read the passwords from it
+            ubwsl_echo warning "Skipping the creation of the \"postgres\" user and the \"default\" user in PostgreSQL"
+            ubwsl_echo
+            ubwsl_echo info "Reading PostgreSQL passwords from /home/$USERNAME/.pgsql-pass"
+            PASS_PGSQL_POSTGRES=$(grep postgres /home/$USERNAME/.pgsql-pass | awk -F: '{print $2}')
+            PASS_PGSQL_DEFAULT=$(grep default /home/$USERNAME/.pgsql-pass | awk -F: '{print $2}')
+            ubswl_echo log "Your PostgreSQL \"postgres\" user's password is: $PASS_PGSQL_POSTGRES"
+            ubswl_echo log "Your PostgreSQL \"default\" user's password is: $PASS_PGSQL_DEFAULT"
+        fi
 
         # create the /etc/apache2/certs-selfsigned/ directory (if it does not exist)
         if [ ! -d /etc/apache2/certs-selfsigned/ ]; then
@@ -373,17 +433,23 @@ expect eof"
             ubwsl_echo warning "Skipping the creation of the ~/.ssh/ folder and the generation of a secure ssh key"
         fi
 
-        # ask the user if he wants to set up NVM and Bash Aliases
+        # ok, the hard part is done, let's move to the final steps
         ubwsl_echo
         ubwsl_echo highlight "We're almost done. The required stuff has been installed."
         ubwsl_echo
-        read -p "Do you want to set up NVM, Node, Yarn, and Bash Aliases? (y/n): " -n 1 -r </dev/tty
+
+        # ask the user if he wants to set up our fantastic Gash Bash, NVM and Yarn
+        read -p "Do you want to set up Bash (Gash) NVM, Node and Yarn? (y/n): " -n 1 -r </dev/tty
         ubwsl_echo
 
         if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Install Gash Bash
+            ubwsl_echo info "Installing Gash Bash"
+            wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash -s -- --assume-yes --quiet
+
             # install NVM
             ubwsl_echo info "Installing NVM"
-            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
@@ -396,52 +462,15 @@ expect eof"
             ubwsl_echo info "Installing Yarn"
             npm install -g yarn
 
-            # install the Aliases
-            # create the .bash_aliases file with some useful aliases
-            ubwsl_echo info "Creating the ~/.bash_aliases file with some useful aliases"
-            BASHLOCAL_FILE=$(
-                cat <<EOF
-alias hte="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-create="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli create"
-alias hte-remove="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli remove"
-alias hte-details="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
-alias composer-self-update="sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update"
-alias composer-packages-update="composer global update"
-alias composer="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer73="/usr/bin/php7.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
-alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias php="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php80="/usr/bin/php8.0 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php74="/usr/bin/php7.4 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php73="/usr/bin/php7.3 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias php56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M"
-alias wslrestart="history -a && cmd.exe /C wsl --shutdown"
-EOF
-            )
-
-            echo "$BASHLOCAL_FILE" >~/.bash_local
-            source ~/.bash_local
         else
             ubwsl_echo warning "Skipping the Bash Env, NVM and Aliases setup"
         fi
 
         # echo the footer of the script
         ubwsl_echo info "Installation completed! You can now start using your new LAMP stack!"
+
+        # place a file in /etc/ubwsl-installed with the current date/time to signal that the script has been executed
+        sudo touch /etc/ubwsl-installed && sudo date > /etc/ubwsl-installed && sudo chown $USERNAME:$USERNAME /etc/ubwsl-installed && sudo chmod 644 /etc/ubwsl-installed
 
         ubwsl_reset
     }

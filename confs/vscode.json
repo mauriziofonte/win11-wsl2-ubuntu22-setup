@@ -9,14 +9,16 @@
 	"workbench.editor.showTabs": true,
 	"terminal.integrated.fontFamily": "Source Code Pro",
 	"terminal.integrated.lineHeight": 0.8,
-	"terminal.integrated.enableBell": false,
+	"terminal.integrated.enableVisualBell": false,
 	"terminal.integrated.letterSpacing": -0.1,
 	"terminal.integrated.fontSize": 16,
 	"editor.fontFamily": "Roboto Sans",
 	"editor.fontWeight": "600",
 	"editor.cursorStyle": "line",
 	"editor.cursorBlinking": "phase",
-	"editor.rulers": [130],
+	"editor.rulers": [
+		130
+	],
 	"editor.formatOnSave": true,
 	"editor.minimap.enabled": false,
 	"editor.wordWrap": "on",
