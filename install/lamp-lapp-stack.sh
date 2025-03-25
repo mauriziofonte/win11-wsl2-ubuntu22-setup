@@ -81,7 +81,7 @@
         ubwsl_echo warning "Also note that the system will ask you for the SUDO password multiple times during the installation."
         ubwsl_echo
         ubwsl_echo log "If for any reason this script stops or fails, try and re-run it with:"
-        ubwsl_echo log " > wget -qO- https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/lamp-stack.sh | bash"
+        ubwsl_echo log " > wget -qO- https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/lamp-lapp-stack.sh | bash"
         ubwsl_echo
         ubwsl_echo info "Are you ready? Press any key to continue or CTRL+C to abort."
         read -n 1 -s </dev/tty
@@ -120,7 +120,7 @@
         LC_ALL=C.UTF-8 sudo add-apt-repository --yes ppa:ondrej/apache2
         sudo apt-get --assume-yes --quiet update && sudo apt-get --assume-yes --quiet upgrade
         PHPVERS="8.3 8.2 8.1 8.0 7.4 7.3 7.2 7.1 7.0 5.6"
-        PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql readline redis soap sqlite3 xsl zip"
+        PHPMODS="cli bcmath bz2 curl fpm gd gmp igbinary imagick imap intl mbstring mcrypt memcached msgpack mysql pgsql readline redis soap sqlite3 xsl zip"
         APTPACKS=""
         for VER in $PHPVERS; do
             APTPACKS+="libapache2-mod-php$VER php$VER "
@@ -144,10 +144,16 @@
         sudo update-alternatives --set php /usr/bin/php8.3
         sudo update-alternatives --set phar /usr/bin/phar8.3
         sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.3
-
+        
+        # MYSQL installation
         sudo apt-get --assume-yes --quiet install mariadb-server
         sudo systemctl enable mariadb.service
         sudo systemctl start mariadb.service
+
+        # Postgresql installation
+        sudo apt-get install -y postgresql-common
+        sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+        sudo apt-get install -y postgresql-16
 
         # modify /etc/apache2/envvars so that APACHE_RUN_USER=$USERNAME and APACHE_RUN_GROUP=$USERNAME
         ubwsl_echo info "Modifying /etc/apache2/envvars"
@@ -234,6 +240,84 @@ expect eof"
             PASS_MYSQL_DEFAULT=$(grep default /home/$USERNAME/.mysql-pass | awk -F: '{print $2}')
             ubwsl_echo log "Your mysql \"root\" user's password is: $PASS_MYSQL_ROOT"
             ubwsl_echo log "Your mysql \"default\" user's password is: $PASS_MYSQL_DEFAULT"
+        fi
+
+        # if the file /home/$USERNAME/.postgresql-pass does not exist, then create a new password for the user "postgres", "root" and "default", and the user's username
+        if [ ! -f /home/$USERNAME/.postgresql-pass ]; then
+            # create passwords for the users "postgres", "root" and "default"
+            PASS_POSTGRES=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+            PASS_POSTGRES_ROOT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+            PASS_POSTGRES_DEFAULT=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+            PASS_POSTGRES_USER=$(openssl rand -base64 64 | sed 's/[^a-z0-9]//g' | head -c 8)
+
+            # create the expect script -- NEEDS TO BE CHECKED!!!! TODO!!!
+            EXPECT_SCRIPT="
+set timeout 10
+spawn psql -U postgres
+expect \"postgres=#\"
+send \"ALTER USER \\\"postgres\\\" WITH PASSWORD '$PASS_POSTGRES';\r\"
+expect \"ALTER ROLE\"
+send \"CREATE ROLE \\\"root\\\" WITH LOGIN PASSWORD '$PASS_POSTGRES_ROOT';\r\"
+expect \"CREATE ROLE\"
+send \"ALTER ROLE \\\"root\\\" WITH SUPERUSER;\r\"
+expect \"ALTER ROLE\"
+send \"GRANT ALL PRIVILEGES ON SCHEMA public TO \\\"root\\\";\r\"
+expect \"GRANT\"
+send \"CREATE ROLE \\\"default\\\" WITH LOGIN PASSWORD '$PASS_POSTGRES_DEFAULT';\r\"
+expect \"CREATE ROLE\"
+send \"ALTER ROLE \\\"default\\\" WITH SUPERUSER;\r\"
+expect \"ALTER ROLE\"
+send \"GRANT ALL PRIVILEGES ON SCHEMA public TO \\\"default\\\";\r\"
+expect \"GRANT\"
+send \"CREATE ROLE \\\"$USERNAME\\\" WITH LOGIN PASSWORD '$PASS_POSTGRES_USER';\r\"
+expect \"CREATE ROLE\"
+send \"ALTER ROLE \\\"$USERNAME\\\" WITH SUPERUSER;\r\"
+expect \"ALTER ROLE\"
+send \"GRANT ALL PRIVILEGES ON SCHEMA public TO \\\"$USERNAME\\\";\r\"
+expect \"GRANT\"
+send \"CREATE DATABASE defaultdb;\r\"
+expect \"CREATE DATABASE\"
+send \"GRANT ALL PRIVILEGES ON DATABASE defaultdb TO \\\"postgres\\\";\r\"
+expect \"GRANT\"
+send \"GRANT ALL PRIVILEGES ON DATABASE defaultdb TO \\\"root\\\";\r\"
+expect \"GRANT\"
+send \"GRANT ALL PRIVILEGES ON DATABASE defaultdb TO \\\"default\\\";\r\"
+expect \"GRANT\"
+send \"GRANT ALL PRIVILEGES ON DATABASE defaultdb TO \\\"$USERNAME\\\";\r\"
+expect \"GRANT\"
+send \"\\q\r\"
+expect eof"
+
+            # execute the expect script
+            ubwsl_echo info "Creating new PostgreSQL users, and a placeholder \"defaultdb\" database"
+            ubwsl_echo warning "IMPORTANT: Do not type anything, the installer will reply to the prompts automatically"
+            echo "${EXPECT_SCRIPT}" | expect
+
+            # save the passwords to /home/$USERNAME/.postgresql-pass
+            ubwsl_echo info "Saving postgresql passwords to /home/$USERNAME/.postgresql-pass"
+            ubwsl_echo log "Your postgresql \"postgres\" user's password is: $PASS_POSTGRES"
+            ubwsl_echo log "Your postgresql \"root\" user's password is: $PASS_POSTGRES_ROOT"
+            ubwsl_echo log "Your postgresql \"default\" user's password is: $PASS_POSTGRES_DEFAULT"
+            ubwsl_echo log "Your postgresql \"$USERNAME\" user's password is: $PASS_POSTGRES_USER"
+            echo "postgres:$PASS_POSTGRES" >/home/$USERNAME/.postgresql-pass
+            echo "root:$PASS_POSTGRES_ROOT" >>/home/$USERNAME/.postgresql-pass
+            echo "default:$PASS_POSTGRES_DEFAULT" >>/home/$USERNAME/.postgresql-pass
+            echo "$USERNAME:$PASS_POSTGRES_USER" >>/home/$USERNAME/.postgresql-pass
+            chown $USERNAME:$USERNAME /home/$USERNAME/.postgresql-pass
+            chmod 600 /home/$USERNAME/.postgresql-pass
+        else
+            # if the file /home/$USERNAME/.postgresql-pass exists, then read the passwords from it
+            ubwsl_echo warning "Skipping the creation of new Postgresql users"
+            ubwsl_echo
+            ubwsl_echo info "Reading postgresql passwords from /home/$USERNAME/.postgresql-pass"
+            PASS_POSTGRES=$(grep postgres /home/$USERNAME/.postgresql-pass | awk -F: '{print $2}')
+            PASS_POSTGRES_ROOT=$(grep root /home/$USERNAME/.postgresql-pass | awk -F: '{print $2}')
+            PASS_POSTGRES_DEFAULT=$(grep default /home/$USERNAME/.postgresql-pass | awk -F: '{print $2}')
+            PASS_POSTGRES_USER=$(grep $USERNAME /home/$USERNAME/.postgresql-pass | awk -F: '{print $2}')
+            ubwsl_echo log "Your postgresql \"postgres\" user's password is: $PASS_POSTGRES"
+            ubwsl_echo log "Your postgresql \"root\" user's password is: $PASS_POSTGRES_ROOT"
+            ubwsl_echo log "Your postgresql \"default\" user's password is: $PASS_POSTGRES_DEFAULT"
+            ubwsl_echo log "Your postgresql \"$USERNAME\" user's password is: $PASS_POSTGRES_USER"
         fi
 
         # create a new /etc/mysql/mariadb.conf.d/99-custom.cnf file (if it does not exist)

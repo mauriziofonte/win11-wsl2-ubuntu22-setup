@@ -1,8 +1,15 @@
-# Setup a LAMP Stack on Windows 11, with WSL2, Ubuntu 22.04, native systemd Services and VS Code optimizations
+# Setup a LAMP/LAPP Stack on Windows 11, with WSL2, Ubuntu 22.04, native systemd Services and VS Code optimizations
 
-This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP Stack_ that is targeted on Windows 11 (and also on Windows 10, see below), with _WSL2_ and **Ubuntu 22.04**, with a _LAMP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
+This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP/LAPP Stack_ that is targeted on Windows 11 (and also on Windows 10, see below), with _WSL2_ and **Ubuntu 22.04**, with a _LAMP/LAPP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
 
 In a hurry? Skip to the [Automated Installation instructions](#automated-install)!
+
+## What is a LAMP/LAPP Stack?
+
+The acronym `LAMP` stands for **L**inux, **A**pache, **M**ySQL, and **P**HP.
+The acronym `LAPP` stands for **L**inux, **A**pache, **P**ostgreSQL, and **P**HP.
+
+LAMP and LAPP stacks are well-known and widely used _web development environments_ that rely on open-source software to deliver dynamic web applications on a wide range of use cases and application scenarios.
 
 ## Why use WIN11 in the first place, and why native systemd services instead of containers?
 
@@ -19,11 +26,11 @@ Anyways, this guide is **not** intended to force you to use native systemd servi
 > Docker Desktop uses the dynamic memory allocation feature in WSL2 to improve the resource consumption. This means Docker Desktop only uses the required amount of CPU and memory resources it needs, while allowing CPU and memory-intensive tasks such as building a container, to run much faster.
 > Additionally, with WSL2, the time required to start a Docker daemon after a cold start is significantly faster.
 
-## What will the LAMP stack be?
+## What will the LAMP/LAPP stack be?
 
-> TL;DR : PHP 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, **8.3**, Apache 2.4, MariaDB 10.6
+> TL;DR : PHP 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, **8.3**, Apache 2.4, MariaDB 10.6, and PostgreSQL 16
 
-The _LAMP Stack_ will be configured in this way:
+The _LAMP/LAPP Stack_ will be configured in this way:
 
 1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.3_ (at the time of writing)
 2. Use the `ppa:ondrej/apache2` Apache repo
@@ -31,15 +38,16 @@ The _LAMP Stack_ will be configured in this way:
 4. Make _Apache Virtualhosts_ work via _PHP-FPM_ and enable the developer to use quick _deploy_ commands to setup a native local VirtualHost located in the Ubuntu machine
 5. Let the developer choose the target PHP version of the deployed VirtualHost ([see here](/docs/en/SETUP-EN.md#test-the-configuration-by-creating-a-virtualHost-for-phpmyadmin))
 6. Use `mariadb 10.6` and optimize Mysql so that it will not create headaches ([see here](/docs/en/SETUP-EN.md#c-modify-mysql-configuration))
+7. Use `postgresql 16` and optimize it for development purposes ([see here](/docs/en/SETUP-EN.md#postgresql-16-configuration)
 
 ## Can I use Docker instead of native systemd services?
 
 Yes, you can. **The automated installer will ask you if you want to install Docker**. If you agree, it will install Docker Desktop for Windows, and you'll be able to use Docker as you would on a Linux machine.
 
-As both the **LAMP Stack** and **Docker** installations are _optional_, you can decide whether to:
+As both the **LAMP/LAPP Stack** and **Docker** installations are _optional_, you can decide whether to:
 
-1. Install the **LAMP Stack** and **Docker**
-2. Install only the **LAMP Stack**
+1. Install the **LAMP/LAPP Stack** and **Docker**
+2. Install only the **LAMP/LAPP Stack**
 3. Install only **Docker**
 4. Don't install anything - after all, you will still have a fully working WSL2 Ubuntu 22.04 machine. _Then, it's all about you and the terminal_!
 
@@ -75,8 +83,8 @@ The **Automated Installer** will do everything for you. Here's a comprehensive l
         * Asks the user if he/she wants to install _Docker_.
         * Downloads and installs _Docker Desktop_ in quiet mode if the user agrees.
         * Informs the user to log off at the end of the automated installer to let the Docker Setup complete its tasks.
-    * **LAMP Stack Installation**:
-        * Asks the user if he/she wants to install a full-fledged **LAMP stack**.
+    * **LAMP/LAPP Stack Installation**:
+        * Asks the user if he/she wants to install a full-fledged **LAMP/LAPP stack**.
         * Proceeds with the installation if the user agrees.
 6. **Desktop Icons Creation**: Automatically creates desktop icons for the Ubuntu terminal and home folder.
 
@@ -85,14 +93,14 @@ Tips:
 1. If you want to run the automated install on **Windows 10**, just append `-SkipWindowsVersionCheck` at the end of the one-liner install
 2. If you want to test a **Dry Run** of the script (no modifications made to your PC), just append `-DryRun` at the end of the one-liner install
 
-#### The LAMP Stack installer can also be run on a pre-existing Ubuntu or Debian machine
+#### The LAMP/LAPP Stack installer can also be run on a pre-existing Ubuntu or Debian machine
 
-The **automated install Powershell script** will execute a specific [_Bash Script_](/install/lamp-stack.sh) that takes care of configuring the **Ubuntu** machine, after the WSL2 VM has been installed.
+The **automated install Powershell script** will execute a specific [_Bash Script_](/install/lamp-lapp-stack.sh) that takes care of configuring the **Ubuntu** machine, after the WSL2 VM has been installed.
 
-Anyway, **if you already have a working Ubuntu/Debian** WSL2 VM, in order to install and configure the _LAMP Stack_, you can run the following command in the terminal:
+Anyway, **if you already have a working Ubuntu/Debian** WSL2 VM, in order to install and configure the _LAMP/LAPP Stack_, you can run the following command in the terminal:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/lamp-stack.sh | bash
+wget -qO- https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/lamp-lapp-stack.sh | bash
 ```
 
 The same command can be lauched on a **Ubuntu/Debian VM hosted on a Cloud Service**, but, you'll need to adjust the _Apache Configuration_ so that:
