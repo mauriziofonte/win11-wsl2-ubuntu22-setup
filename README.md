@@ -16,10 +16,10 @@ LAMP and LAPP stacks are well-known and widely used _web development environment
 During my years of on-field experience, I've created _my own workflow_ that allows a developer to:
 
 1. Use MS Windows, if he/she's comfortable with it
-2. Use the _Linux Terminal_ with all the performance optimizations made possible by **WSL2**, and specifically use **Ubuntu** as its userbase is consistent: if you encounter a problem, or need a specific package, there's a good probability that you will find informations on how to fix the issue or complete the task in minutes
+2. Use the _Linux Terminal_ with all the performance optimizations made possible by **WSL2**, and specifically use **Ubuntu** as its userbase is consistent: if you encounter a problem, or need a specific package, there's a good probability that you will find informations on how to fix the issue or complete the task in a matter of minutes
 3. Use native _systemd services_ like **Apache** and **MariaDB** instead of relying on _Containers_ like Docker. Although, in fact, _Docker performance is nearly identical to native performance in Linux_, (references: [1](https://dominoweb.draco.res.ibm.com/reports/rc25482.pdf) and [2](https://stackoverflow.com/questions/21889053/what-is-the-runtime-performance-cost-of-a-docker-container)) my **personal opinion** is that, if a Client has its own VM or shared hosting or voodoo server where _Dockerization is technically not feasible_, then **development workflow, staging and test should be as much as possible adherent to what will the production environment be**. That said, this means having a set of tools to allow the developer _to quicky deploy, test and benchmark_ on various types of _PHP versions and configurations_ that will be available in the production server.
 
-Anyways, this guide is **not** intended to force you to use native systemd services. **If you want to use Docker, you can**. The automated installer will ask you if you want to install Docker, and if you agree, it will install Docker Desktop for Windows, and you'll be able to use Docker as you would, with all the benefits of using it inside the _WSL2_ subsystem. In fact, as stated on the official Docker Documentation:
+Anyways, this guide is **not** intended to _force you_ to use native WSL Ubuntu systemd services. **If you want to use Docker, you can** ([see here](#can-i-use-docker-instead-of-native-systemd-services)). The automated installer will ask you if you want to install Docker, and if you agree, it will install Docker Desktop for Windows, and you'll be able to use Docker as you would, with all the benefits of using it inside the _WSL2_ subsystem. In fact, as stated on the official Docker Documentation:
 
 > Docker Desktop WSL 2 backend on Windows
 > Windows Subsystem for Linux (WSL) 2 is a full Linux kernel built by Microsoft, which lets Linux distributions run without managing virtual machines. With Docker Desktop running on WSL2, users can leverage Linux workspaces and avoid maintaining both Linux and Windows build scripts. In addition, WSL2 provides improvements to file system sharing and boot time.
@@ -32,13 +32,13 @@ Anyways, this guide is **not** intended to force you to use native systemd servi
 
 The _LAMP/LAPP Stack_ will be configured in this way:
 
-1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.3_ (at the time of writing)
+1. Use the `ppa:ondrej/php` PHP repo, that allows to install PHP versions from _5.6_ from up to _8.4_ (at the time of writing)
 2. Use the `ppa:ondrej/apache2` Apache repo
 3. Use the [`mfonte/hte-cli`](https://github.com/mauriziofonte/hte-cli) tool to handle _Apache Virtualhosts_. This tool can be used to **create, delete and list** virtualhosts that are specifically optimized for **local/test development**.
 4. Make _Apache Virtualhosts_ work via _PHP-FPM_ and enable the developer to use quick _deploy_ commands to setup a native local VirtualHost located in the Ubuntu machine
 5. Let the developer choose the target PHP version of the deployed VirtualHost ([see here](/docs/en/SETUP-EN.md#test-the-configuration-by-creating-a-virtualHost-for-phpmyadmin))
-6. Use `mariadb 10.6` and optimize Mysql so that it will not create headaches ([see here](/docs/en/SETUP-EN.md#c-modify-mysql-configuration))
-7. Use `postgresql 16` and optimize it for development purposes ([see here](/docs/en/SETUP-EN.md#postgresql-16-configuration)
+6. Use `MariaDB 11.4` (EOL 29 May 2029) and optimize Mysql so that it will not create headaches ([see here](/docs/en/SETUP-EN.md#c-modify-mysql-configuration))
+7. Use `PostgreSQL 16` (EOL 09 Nov 2028) as an alternative to MariaDB, if the developer wants to use it
 
 ## Can I use Docker instead of native systemd services?
 
@@ -49,7 +49,7 @@ As both the **LAMP/LAPP Stack** and **Docker** installations are _optional_, you
 1. Install the **LAMP/LAPP Stack** and **Docker**
 2. Install only the **LAMP/LAPP Stack**
 3. Install only **Docker**
-4. Don't install anything - after all, you will still have a fully working WSL2 Ubuntu 22.04 machine. _Then, it's all about you and the terminal_!
+4. Don't install anything - after all, you will still have a fully working WSL2 Ubuntu 24.04 machine. _Then, it's all about you and the terminal_!
 
 ## Installation instructions
 
@@ -70,14 +70,14 @@ The **Automated Installer** will do everything for you. Here's a comprehensive l
 1. **Verifies Internet Connection**: Automatically checks and waits for an active internet connection before proceeding.
 2. **Verifies if you're actually running on Windows 11**: Ensures the script is running on Windows 11, with an option to skip this check (run the script with `-SkipWindowsVersionCheck` if you want to run it on _Windows 10_ aswell).
 3. **Pre-Setup Checks and Operations**:
-    * Checks if the target distribution (_Ubuntu-22.04_) is already installed. Exits if found and not in force mode.
+    * Checks if the target distribution (_Ubuntu-24.04_) is already installed. Exits if found and not in force mode.
     * Enables _WSL_ and _Virtual Machine Platform_ Windows features.
     * Schedules the script for auto-run after reboot by creating a CMD batch file in the Startup folder.
 4. **Automated Reboot**: If necessary, initiates an automatic system restart to continue the setup after enabling _WSL_ and _Virtual Machine Platform_ features.
     * **Post-Reboot Operations**:
     * Downloads and installs the **Linux Kernel Update** if not already installed, in silent mode.
     * Updates **WSL** and sets the default version to **2**.
-    * Installs the target WSL distribution (hardcoded to _Ubuntu-22.04_) if not already present on the system.
+    * Installs the target WSL distribution (hardcoded to _Ubuntu-24.04_) if not already present on the system.
 5. **User Interaction**:
     * **Docker Installation**:
         * Asks the user if he/she wants to install _Docker_.
@@ -113,15 +113,15 @@ The same command can be lauched on a **Ubuntu/Debian VM hosted on a Cloud Servic
 
 Manual installation instuctions are provided in two languages:
 
-* [Manual installation instructions in Italian](/docs/it/SETUP-IT.md)
-* [Manual installation instructions in English](/docs/en/SETUP-EN.md)
+* [Manual installation instructions in **English**](/docs/en/SETUP-EN.md)
+* [Manual installation instructions in **Italian**](/docs/it/SETUP-IT.md)
 
 ## Uninstall
 
-To completely remove Ubuntu 22.04 from your computer, open a `PowerShell` window and run:
+To completely remove Ubuntu 24.04 from your computer, open a `PowerShell` window and run:
 
 ```powershell
-wsl --unregister Ubuntu-22.04
+wsl --unregister Ubuntu-24.04
 ```
 
 If you used the automated install method, you'll also need to remove a specific _HKCU_ Registry Key. To do so, open a `PowerShell` window with **elevated privileges** (_Run as Admin_) and run:
