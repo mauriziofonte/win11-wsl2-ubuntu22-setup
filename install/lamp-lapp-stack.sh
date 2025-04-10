@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script installs a LAMP stack with MySQL and PostgreSQL stack on Ubuntu 24.04 LTS (Noble Numbat)
+# This script installs a LAMP+LAPP (Linux - obviously, Apache, Mysql, PostgreSQL, MySQL) on Ubuntu 24.04 LTS (Noble Numbat)
 # via custom repositories (Ondrej PHP/Apache, MariaDB, PostgreSQL)
 # PHP will be installed with multiple versions (8.4, 8.3, 8.2, 8.1, 8.0, 7.4, 7.3, 7.2, 7.1, 7.0, 5.6)
 # Apache will be configured to work with PHP-FPM
@@ -68,7 +68,7 @@
 
         # echo the header of the script
         ubwsl_echo info "*============================================================================*"
-        ubwsl_echo info "*  Ubuntu 24.04 LTS (Noble Numbat) LAMP stack installer                   *"
+        ubwsl_echo info "*  Ubuntu 24.04 LTS (Noble Numbat) LAMP+LAPP stack installer                   *"
         ubwsl_echo info "*                                                                            *"
         ubwsl_echo info "*  Copyright (c) 2024 Maurizio Fonte https://www.mauriziofonte.it            *"
         ubwsl_echo info "*  Released under MIT License                                                *"
@@ -77,7 +77,7 @@
 
         # check if the file /etc/ubwsl-installed exists: if it does, then the script has already been executed
         if [ -f /etc/ubwsl-installed ]; then
-            ubwsl_echo >&2 highlight "The LAMP stack has already been installed on this machine."
+            ubwsl_echo >&2 highlight "The LAMP+LAPP stack has already been installed on this machine."
             ubwsl_echo >&2 highlight "If you want to re-run the script, please remove the file /etc/ubwsl-installed and try again."
             ubwsl_echo
             exit 1
@@ -86,13 +86,17 @@
         # save the username of the user that ran the script
         USERNAME=$(whoami | awk '{print $1}')
         MACHINENAME=$(hostname)
-        ubwsl_echo "Hello, $USERNAME! We're going to install your fresh new LAMP stack as on your \"$MACHINENAME\" machine"
+        ubwsl_echo "Hello, $USERNAME! We're going to install your fresh new LAMP+LAPP stack as on your \"$MACHINENAME\" machine"
         ubwsl_echo
         ubwsl_echo warning "Please note that the installation may take a while, depending on your internet connection speed and on your machine's specs."
         ubwsl_echo warning "Also note that the system will ask you for the SUDO password multiple times during the installation."
         ubwsl_echo
         ubwsl_echo log "If for any reason this script stops or fails, try and re-run it with:"
         ubwsl_echo log " > wget -qO- https://raw.githubusercontent.com/mauriziofonte/win11-wsl2-ubuntu22-setup/main/install/lamp-lapp-stack.sh | bash"
+        ubwsl_echo
+        ubwsl_echo warning "It is strongly suggested *NOT* to run this script in production environments."
+        ubwsl_echo warning "Remember this has been specifically designed for development environments only."
+        ubwsl_echo warning "By proceeding executing this script in a production environment, you acknowledge that you are doing so at your own risk."
         ubwsl_echo
         ubwsl_echo info "Are you ready? Press any key to continue or CTRL+C to abort."
         read -n 1 -s </dev/tty
@@ -527,7 +531,7 @@ expect eof"
 
             # install NVM
             ubwsl_echo info "Installing NVM"
-            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
@@ -545,7 +549,7 @@ expect eof"
         fi
 
         # echo the footer of the script
-        ubwsl_echo info "Installation completed! You can now start using your new LAMP stack!"
+        ubwsl_echo info "Installation completed! You can now start using your new LAMP+LAPP stack!"
 
         # place a file in /etc/ubwsl-installed with the current date/time to signal that the script has been executed
         sudo touch /etc/ubwsl-installed && sudo date > /etc/ubwsl-installed && sudo chown $USERNAME:$USERNAME /etc/ubwsl-installed && sudo chmod 644 /etc/ubwsl-installed

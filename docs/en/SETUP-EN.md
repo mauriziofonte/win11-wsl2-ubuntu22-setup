@@ -1,8 +1,8 @@
-# Manual Docker / LAMP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 24.04 (without Microsoft Store)
+# Manual Docker / LAMP+LAPP Stack Setup on Windows 11 with WSL2, Native Web Services, VS Code, and Ubuntu 24.04 (without Microsoft Store)
 
-> Last updated at: _2024-10-25_. Target Ubuntu version: **24.04.1**
+> Last updated at: _2025-04-10_. Target Ubuntu version: **24.04.1**
 
-This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 24.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP** stack (with native services through _systemd_), install Docker, and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
+This guide will illustrate how to install support for the native Linux subsystem of Windows (WSL2), install Ubuntu 24.04 (without having to use the Microsoft Store), create a multi-PHP **LAMP+LAPP** stack (with native services through _systemd_), install Docker, and connect Visual Studio Code from Windows 11, to develop and debug directly on the virtual machine.
 
 ## System Requirements
 
@@ -13,7 +13,7 @@ This guide will illustrate how to install support for the native Linux subsystem
 5. A _medium-level_ knowledge of the Linux terminal (such as how to use and what basic commands like _cd_, _cp_, _mv_, _sudo_, _nano_, etc.)
 6. Your computer **should be password protected, use BitLocker, and have support for TPM 2.0** to prevent malicious access to sensitive information, if someone were to gain possession of your device. **This is particularly important if you intend to handle information on behalf of others (work)**. Your security policies on the network and the devices you use should be appropriate for the type of PC use you intend to carry out. Generally, _if you use your PC for work, you need to pay utmost attention to protection_. Prevention is better than cure.
 
-The **LAMP** stack we're going to configure supports **https** (with self-signed certificates expiring in 30 years), **http/2** protocol, and **brotli compression**. As for the PHP part, we'll use **PHP-FPM** because it's more performant and more versatile in configuring _per-virtualhost_ settings. To understand the differences between using PHP with Apache in PHP-CGI mode versus PHP-FPM, refer to this guide: <https://www.basezap.com/difference-php-cgi-php-fpm/>
+The **LAMP+LAPP** stack we're going to configure supports **https** (with self-signed certificates expiring in 30 years), **http/2** protocol, and **brotli compression**. As for the PHP part, we'll use **PHP-FPM** because it's more performant and more versatile in configuring _per-virtualhost_ settings. To understand the differences between using PHP with Apache in PHP-CGI mode versus PHP-FPM, refer to this guide: <https://www.basezap.com/difference-php-cgi-php-fpm/>
 
 ## Installing Ubuntu 24.04 LTS on Windows in WSL2 Virtualization
 
@@ -160,7 +160,7 @@ Then, restart the Ubuntu machine.
 
 ## Step 0 - Installing Docker Desktop on Windows 11
 
-> Note: If you do not plan to use Docker Desktop, you can skip this step and proceed to **Step 1** [Configure the LAMP Environment on Ubuntu](#step-1---configure-the-lamp-environment-on-ubuntu)
+> Note: If you do not plan to use Docker Desktop, you can skip this step and proceed to **Step 1** [Configure the LAMP+LAPP Environment on Ubuntu](#step-1---configure-the-lamplapp-environment-on-ubuntu)
 
 To use Docker Desktop on Windows 11, your processor must support **Virtualization** and **Hyper-V**. If you're not sure whether these features are enabled, you can check through Windows' **Task Manager**.
 
@@ -170,9 +170,9 @@ To install Docker Desktop, download the installation file from [https://desktop.
 
 After installation, **Restart your PC**.
 
-## Step 1 - Configure the LAMP Environment on Ubuntu
+## Step 1 - Configure the LAMP+LAPP Environment on Ubuntu
 
-> Note: If you do not intend to set up the LAMP environment, as the Ubuntu system will mainly be used with Docker, you can skip steps **1, 2, and 3** and proceed to **Step 4** [Install a Custom Shell, NVM, and Optimize User Experience (Optional)](#step-4---install-a-custom-shell-nvm-and-optimize-user-experience-optional)
+> Note: If you do not intend to set up the LAMP+LAPP environment, as the Ubuntu system will mainly be used with Docker, you can skip steps **1, 2, and 3** and proceed to **Step 4** [Install a Custom Shell, NVM, and Optimize User Experience (Optional)](#step-4---install-a-custom-shell-nvm-and-optimize-user-experience-optional)
 
 Here, we will install all the system services and executables to enable support for **PHP** versions 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3 and 8.4. We will also enable the **Apache web server** and the **MySQL server**.
 
@@ -237,11 +237,11 @@ psql
 exit
 ```
 
-Once these commands are executed, all the necessary services and executables will be installed to create a LAMP stack with MySQL and PostgreSQL in multi-PHP mode (multiple PHP versions) with PHP-FPM to enhance performance.
+Once these commands are executed, all the necessary services and executables will be installed to create a LAMP+LAPP stack with MySQL and PostgreSQL in multi-PHP mode (multiple PHP versions) with PHP-FPM to enhance performance.
 
 > Note: The MySQL queries related to the **username and password** (_admin_ and _YOUR-ADMIN-PASS_) to be created as a privileged user can be changed at will. In the example above, a user with the username `admin` and password `YOUR-ADMIN-PASS` is created. It should be noted that **we are configuring a local development environment**, and as long as this environment is not exposed on the internet, we don't have to worry about particular policies regarding usernames and password complexity. However, I want to emphasize that using "easily guessable" usernames and "well-known" passwords is a **bad practice**.
 
-## Step 2 - Configure the LAMP Environment on Ubuntu
+## Step 2 - Configure the LAMP+LAPP Environment on Ubuntu
 
 Here we will modify the basic configurations of **Apache** and **MySQL** to be able to work locally.
 
@@ -382,7 +382,7 @@ consoleCopy code
 
 ## Step 3 - Setting up the PHP Environment with Composer and HTE-Cli
 
-Now that we've set up the LAMP stack, it's useless unless we create some _VirtualHosts_ to develop or test web applications on different versions of PHP installed on the system.
+Now that we've set up the LAMP+LAPP stack, it's useless unless we create some _VirtualHosts_ to develop or test web applications on different versions of PHP installed on the system.
 
 To create `VirtualHosts`, we'll use [HTE-Cli](https://github.com/mauriziofonte/hte-cli), a tool **of my own creation** designed to facilitate the configuration of test environments on fictitious domain names by modifying the _Windows hosts file_.
 
@@ -427,6 +427,8 @@ echo 'export PATH="$(composer config -g home)/vendor/bin:$PATH"' >> ~/.bashrc
 ### Configuring Bash Aliases
 
 Now that we have everything installed, all that remains is to create some _Bash Aliases_ to speed up the work.
+
+> Heads up!: if you plan on installing the `gash` bash as suggested below, you can skip this section and go directly to the next one. In fact, the `gash` bash already has these aliases pre-configured.
 
 Launch `nano .bash_aliases` (or `vim .bash_aliases`) and paste these aliases:
 
@@ -490,8 +492,8 @@ For illustration purposes, this section will show the complete process of creati
 ```bash
 cd ~/
 mkdir opt && cd opt/
-wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
-unzip phpMyAdmin-5.2.1-all-languages.zip && rm -f phpMyAdmin-5.2.1-all-languages.zip && mv phpMyAdmin-5.2.1-all-languages phpmyadmin
+wget https://files.phpmyadmin.net/phpMyAdmin/5.2.2/phpMyAdmin-5.2.2-all-languages.zip
+unzip phpMyAdmin-5.2.2-all-languages.zip && rm -f phpMyAdmin-5.2.2-all-languages.zip && mv phpMyAdmin-5.2.2-all-languages phpmyadmin
 ```
 
 Now, we've created the root directory for the _PhpMyAdmin_ installation. All that's left is to configure a working VirtualHost.
@@ -549,7 +551,7 @@ To edit the _hosts file_ on Windows 11, you can:
 
 Afterward, **open a privileged Windows command line** and run `ipconfig /flushdns`.
 
-### Done!
+### Done
 
 **Congratulations**! If you've reached this point, you have everything you need to get to work, and you can navigate to [https://local.phpmyadmin.test/setup/](https://local.phpmyadmin.test/setup/) in your browser to proceed with the PhpMyAdmin setup.
 
@@ -562,10 +564,10 @@ To create additional VirtualHosts for other projects, **always use the same inst
 
 These steps **are optional** and aim to optimize the user experience on the Linux Bash (according to my personal preferences), as well as install `nvm` (_Node Version Manager_, for working with _Node_, _React_, etc.).
 
-My recommendation for beginners is to install the **Gash** Bash, which is a minimal, colored Bash that works well with _git_ and has a full set of powerful aliases that suit well for this exact LAMP environment. Plus, _Gash_ it's a creation of mine. If you prefer to use _ZSH_, or any other custom shell, or don't bother with this step, feel free to skip it.
+My recommendation for beginners is to install the **Gash** Bash, which is a minimal, colored Bash that works well with _git_ and has a full set of powerful aliases that suit well for this exact LAMP+LAPP environment. Plus, _Gash_ it's a creation of mine. If you prefer to use _ZSH_, or any other custom shell, or don't bother with this step, feel free to skip it.
 
-1. Follow the installation instructions to install the **Gash** Bash at [https://github.com/mauriziofonte/gash](https://github.com/mauriziofonte/gash) (or install _ZSH_, or any other shell of your preference: I find this super minimal colored bash very suitable, and my personal opinion is that having less help on the bash is a great way to keep focused). Here's a one-liner to install _Gash_: `wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash`
-2. Run `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash` to install NVM (for NodeJS/React development).
+1. Follow the installation instructions to install the **Gash** Bash at [https://github.com/mauriziofonte/gash](https://github.com/mauriziofonte/gash). Alternatively, install _ZSH_ or any other shell of your choice: I personally like `gash` because it's a tool I created, super minimal. Here's a one-liner to install _Gash_: `wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash`
+2. Run `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash` to install NVM (for NodeJS/React development).
 3. Create a public/private key pair with the command `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/key_name -C "user@computer"` (share the content of the public key `~/.ssh/key_name.pub` with your team, which will use it, for example, to enable access to a private GIT repository).
 4. Create a link to the **Ubuntu home directory** accessible from your _Desktop_ to view Ubuntu's home via Windows Explorer: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `\\wsl$\Ubuntu-24.04\home\USERNAME`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico)).
 5. Create a link to Ubuntu's _Bash_ accessible from your _Desktop_ to launch a new terminal: to do this, right-click on the _Desktop_, Select `New` > `Shortcut`, and enter in the **shortcut path** the string `C:\Windows\System32\wsl.exe -d Ubuntu-24.04 bash -c "cd /home/USERNAME && bash"`, where **USERNAME** is the username used on Ubuntu. **Optional**: change the shortcut icon (recommend this: [ubuntu-icon.ico](/icons/ubuntu-icon.ico)).
@@ -611,15 +613,15 @@ Then, copy-paste the JSON configuration shown in [vscode.json](/confs/vscode.jso
 
 This configuration contains both **my personal preferences** and settings specific to formatters and **php cs fixer**.
 
-> **NOTE**: The recommended configuration in [vscode.json](/confs/vscode.json) requires installing [Roboto Sans](https://fonts.google.com/specimen/Roboto) and [Source Code Pro](https://fonts.google.com/specimen/Source+Code+Pro) fonts. 
+> **NOTE**: The recommended configuration in [vscode.json](/confs/vscode.json) requires installing [Roboto Sans](https://fonts.google.com/specimen/Roboto) and [Source Code Pro](https://fonts.google.com/specimen/Source+Code+Pro) fonts.
 > **Roboto Sans** is used for terminal output, while **Source Code Pro** is used for source code, markdown files, readmes, basically all text editors.
 > Detailed installation instructions for the fonts on Windows are omitted. However, simply download the `ttf` font files, open them with Windows, and click `Install`
 
 ## Epilogue
 
-### Tailoring Your Own Local LAMP Ecosystem
+### Tailoring Your Own Local LAMP+LAPP Ecosystem
 
-This README is my artisan blueprint for installing and configuring a **local** _LAMP_ development environment on Windows 11 with WSL2. It's the culmination of my own trial, error, and success in achieving a workflow that **suits me**. Understand that while this guide works for me, your experience and mileage may vary.
+This README is my artisan blueprint for installing and configuring a **local** _LAMP+LAPP_ development environment on Windows 11 with WSL2. It's the culmination of my own trial, error, and success in achieving a workflow that **suits me**. Understand that while this guide works for me, your experience and mileage may vary.
 
 ### Community Input
 

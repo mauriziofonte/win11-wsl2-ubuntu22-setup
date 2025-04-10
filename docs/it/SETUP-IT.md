@@ -1,8 +1,8 @@
-# Setup manuale Docker / Stack LAMP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 24.04 (senza Microsoft Store)
+# Setup manuale Docker / Stack LAMP+LAPP su Windows 11 con WSL2, servizi web nativi, VS Code e Ubuntu 24.04 (senza Microsoft Store)
 
-> Ultimo aggiornamento: _25/10/2024_. Versione target Ubuntu: **24.04.1**
+> Ultimo aggiornamento: _10/04/2025_. Versione target Ubuntu: **24.04.1**
 
-Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 24.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP** multi-PHP (con servizi nativi tramite _systemd_), installare Docker, e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
+Questa guida illustrerà come installare il supporto al sottosistema Linux nativo di Windows (WSL2), installare Ubuntu 24.04 (senza dover utilizzare il Microsoft Store), creare uno stack **LAMP+LAPP** multi-PHP (con servizi nativi tramite _systemd_), installare Docker, e agganciare Visual Studio Code da Windows 11, per sviluppare e debuggare direttamente sulla macchina virtuale.
 
 ## Requisiti
 
@@ -13,7 +13,7 @@ Questa guida illustrerà come installare il supporto al sottosistema Linux nativ
 5. Una conoscenza di _medio livello_ del terminale Linux (come usare e cosa sono comandi di base come _cd_, _cp_, _mv_, _sudo_, _nano_, etc.)
 6. Il vostro computer **dovrebbe essere protetto da password, usare BitLocker, e disporre di supporto a TPM 2.0** per evitare che malintenzionati possano accedere ad informazioni sensibili, se entrassero in possesso del vostro dispositivo. **Questo è particolarmente importante se intendete maneggiare informazioni per conto terzi (lavoro)**. Le vostre politiche di sicurezza sulla rete e i dispositivi che utilizzate dovrebbero essere consone al tipo di uso del PC che intendete effettuare. In linea generale, _se usate il vostro PC per lavoro, bisogna porre massima attenzione alla protezione_. Prevenire è meglio che curare.
 
-Lo stack **LAMP** che andremo a configurare supporta **https** (con certificati autofirmati con scadenza a 30 anni), protocollo **http/2** e **compressione brotli**. Per quanto riguarda la parte PHP, useremo **PHP-FPM** perchè è più performante e più versatile nella configurazione delle impostazioni _per-virtualhost_. Per capire le differenze tra l'utilizzo di PHP con Apache in modalità PHP-CGI piuttosto che PHP-FPM, si rimanda a questa guida: <https://www.basezap.com/difference-php-cgi-php-fpm/>
+Lo stack **LAMP+LAPP** che andremo a configurare supporta **https** (con certificati autofirmati con scadenza a 30 anni), protocollo **http/2** e **compressione brotli**. Per quanto riguarda la parte PHP, useremo **PHP-FPM** perchè è più performante e più versatile nella configurazione delle impostazioni _per-virtualhost_. Per capire le differenze tra l'utilizzo di PHP con Apache in modalità PHP-CGI piuttosto che PHP-FPM, si rimanda a questa guida: <https://www.basezap.com/difference-php-cgi-php-fpm/>
 
 ## Installare Ubuntu 24.04 LTS su Windows in virtualizzazione WSL2
 
@@ -161,7 +161,7 @@ Dopodichè, riavviare la macchina Ubuntu.
 
 ## Step 0 - Installare Docker Desktop su Windows 11
 
-> Nota: se non si intende utilizzare Docker Desktop, si può saltare questo step, e procedere con lo **Step 1** [Configurare l'ambiente LAMP su Ubuntu](#step-1---configurare-lambiente-lamp-su-ubuntu)
+> Nota: se non si intende utilizzare Docker Desktop, si può saltare questo step, e procedere con lo **Step 1** [Configurare l'ambiente LAMP+LAPP su Ubuntu](#step-1---configurare-lambiente-lamplapp-su-ubuntu)
 
 Per poter utilizzare Docker Desktop su Windows 11, è necessario avere un processore con supporto a **Virtualizzazione** e **Hyper-V**. Se non si è sicuri di avere queste funzionalità abilitate, è possibile verificarle tramite il **Task Manager** di Windows.
 
@@ -171,9 +171,9 @@ Per installare Docker Desktop, scaricare il file di installazione da [https://de
 
 Al termine dell'installazione, **Riavviare il PC**.
 
-## Step 1 - Configurare l'ambiente LAMP su Ubuntu
+## Step 1 - Configurare l'ambiente LAMP+LAPP su Ubuntu
 
-> Nota: se non si intende configurare l'ambiente LAMP, poichè il sistema Ubuntu verrà principalmente usato con Docker, si possono saltare gli step **1, 2, e 3** e procedere dallo **Step 4** [Installare una shell custom, NVM, e ottimizzare l'esperienza utente (opzionale)](#step-4---installare-una-shell-custom-nvm-e-ottimizzare-lesperienza-utente-opzionale)
+> Nota: se non si intende configurare l'ambiente LAMP+LAPP, poichè il sistema Ubuntu verrà principalmente usato con Docker, si possono saltare gli step **1, 2, e 3** e procedere dallo **Step 4** [Installare una shell custom, NVM, e ottimizzare l'esperienza utente (opzionale)](#step-4---installare-una-shell-custom-nvm-e-ottimizzare-lesperienza-utente-opzionale)
 
 Qui andremo ad installare tutti i servizi e gli eseguibili di sistema per abilitare il supporto a **PHP** versioni 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3 e 8.4. Abiliteremo anche il **web server Apache** e il server **Mysql**.
 
@@ -238,13 +238,13 @@ psql
 exit
 ```
 
-Eseguiti questi comandi, saranno installati tutti i servizi e gli eseguibili necessari per realizzare uno stack LAMP con Mysql e PostgreSQL in modalità multi-PHP (multiple versioni di PHP) con PHP-FPM per incrementare le performance.
+Eseguiti questi comandi, saranno installati tutti i servizi e gli eseguibili necessari per realizzare uno stack LAMP+LAPP con Mysql e PostgreSQL in modalità multi-PHP (multiple versioni di PHP) con PHP-FPM per incrementare le performance.
 
 > Nota: le query mysql relative allo **username e password** (_admin_ e _YOUR-ADMIN-PASS_) da creare come utente privilegiato possono essere modificate a piacimento.
 > Nell'esempio sopra riportato viene creato un utente con username `admin` e password `YOUR-ADMIN-PASS`. C'è da dire che **stiamo configurando un ambiente di sviluppo locale**, e fintanto che questo ambiente non viene esposto in internet, non dobbiamo preoccuparci di usare policy particolari riguardanti i nomi utente e la complessità delle password.
 > Tuttavia, tengo a precisare che usare nomi utente "facilmente guessabili" e password "ben note" è una **bad practice**.
 
-## Step 2 - Configurare l'ambiente LAMP su Ubuntu
+## Step 2 - Configurare l'ambiente LAMP+LAPP su Ubuntu
 
 Qui andremo a modificare le configurazioni di base di **Apache** e **Mysql** per poter lavorare localmente.
 
@@ -388,7 +388,7 @@ systemctl restart mariadb.service
 
 ## Step 3 - Configurare l'ambiente PHP con Composer e HTE-Cli
 
-Adesso che abbiamo creato e configurato lo stack _LAMP_, non ce ne facciamo nulla se non creiamo dei _VirtualHost_ per svilupare o testare applicazioni web sulle diverse versioni di PHP installate sul sistema.
+Adesso che abbiamo creato e configurato lo stack _LAMP+LAPP_, non ce ne facciamo nulla se non creiamo dei _VirtualHost_ per svilupare o testare applicazioni web sulle diverse versioni di PHP installate sul sistema.
 
 Per creare dei `VirtualHost` utilizzeremo [HTE-Cli](https://github.com/mauriziofonte/hte-cli), un tool **di mia creazione** pensato per agevolare la configurazione di environment di test su nomi dominio fittizi via modifica del _file hosts di Windows_.
 
@@ -434,6 +434,8 @@ echo 'export PATH="$(composer config -g home)/vendor/bin:$PATH"' >> ~/.bashrc
 
 Ora che abbiamo installato tutto, non ci resta che creare dei _Bash Aliases_ che velocizzino il lavoro.
 
+> Nota: se hai intenzione di utilizzare la bash `gash` come shell predefinita, puoi saltare questo passaggio. Di fatto, questi alias verranno già creati automaticamente da `gash` e non dovrai preoccupartene.
+
 Lanciare quindi `nano .bash_aliases` (oppure `vim .bash_aliases`) e incollare questi alias:
 
 ```txt
@@ -443,7 +445,8 @@ alias hte-remove="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024
 alias hte-details="sudo /usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M ~/.config/composer/vendor/bin/hte-cli details"
 alias composer-self-update="sudo /usr/local/bin/composer self-update && sudo /usr/local/bin/composer1 self-update"
 alias composer-packages-update="composer global update"
-alias composer="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
+alias composer84="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
 alias composer81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer"
@@ -455,7 +458,8 @@ alias 1composer72="/usr/bin/php7.2 -d allow_url_fopen=1 -d memory_limit=1024M /u
 alias 1composer71="/usr/bin/php7.1 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer70="/usr/bin/php7.0 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
 alias 1composer56="/usr/bin/php5.6 -d allow_url_fopen=1 -d memory_limit=1024M /usr/local/bin/composer1"
-alias php="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M"
+alias php84="/usr/bin/php8.4 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php83="/usr/bin/php8.3 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php82="/usr/bin/php8.2 -d allow_url_fopen=1 -d memory_limit=1024M"
 alias php81="/usr/bin/php8.1 -d allow_url_fopen=1 -d memory_limit=1024M"
@@ -494,8 +498,8 @@ A mero titolo esemplificativo, verrà mostrata l'intera procedura di creazione d
 ```bash
 cd ~/
 mkdir opt && cd opt/
-wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
-unzip phpMyAdmin-5.2.1-all-languages.zip && rm -f phpMyAdmin-5.2.1-all-languages.zip && mv phpMyAdmin-5.2.1-all-languages phpmyadmin
+wget https://files.phpmyadmin.net/phpMyAdmin/5.2.2/phpMyAdmin-5.2.2-all-languages.zip
+unzip phpMyAdmin-5.2.2-all-languages.zip && rm -f phpMyAdmin-5.2.2-all-languages.zip && mv phpMyAdmin-5.2.2-all-languages phpmyadmin
 ```
 
 Ora abbiamo creato la directory radice per l'installazione di _PhpMyAdmin_. Non resta che configurare un VirtualHost funzionante.
@@ -553,7 +557,7 @@ Per modificare il _file hosts_ su Windows 11, possiamo:
 
 Dopodichè, **aprire una command line di Windows in modalità privilegiata** e lanciare `ipconfig /flushdns`
 
-### Finito!
+### Finito
 
 **Complimenti**! Se sei arrivato fino a questo punto, hai tutto quello che ti serve per lavorare, ed è possibile navigare sul proprio browser all'indirizzo <https://local.phpmyadmin.test/setup/> per proseguire il setup di PhpMyAdmin.
 
@@ -566,10 +570,10 @@ Per creare altri VirtualHost per altri progetti, **utilizzare sempre le stesse i
 
 Questi step **sono opzionali** e servono ad ottimizzare l'esperienza utente sulla console dei comandi di Linux (secondo le mie personali preferenze), oltre che ad installare `nvm` (_Node Version Manager_, per lavorare con _Node_, _React_, etc).
 
-Il mio consiglio per i principianti è di installare la Bash **Gash**, che è una Bash minimale e colorata che funziona bene con _git_ e ha un set completo di potenti alias che si adattano bene a questo ambiente LAMP. Inoltre, _Gash_ è una mia creazione. Se preferite usare _ZSH_, o qualsiasi altra shell custom, o non vi interessa questo step, sentitevi liberi di saltarlo.
+Il mio consiglio per i principianti è di installare la Bash **Gash**, che è una Bash minimale e colorata che funziona bene con _git_ e ha un set completo di potenti alias che si adattano bene a questo ambiente LAMP+LAPP. Inoltre, _Gash_ è una mia creazione. Se preferite usare _ZSH_, o qualsiasi altra shell custom, o non vi interessa questo step, sentitevi liberi di saltarlo.
 
-1. Seguire le istruzioni di installazione della Bash **Gash** qui [https://github.com/mauriziofonte/gash](https://github.com/mauriziofonte/gash) (o installare _ZSH_, o qualunque altra shell di gradimento: io mi trovo bene con questa bash colorata super minimale, mia opinione personale è che avere meno aiuto possibile sulla bash sia un ottimo modo per non staccare la testa). Riporto un one-liner per installare _Gash_: `wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash`
-2. Lanciare `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash` per installare NVM (per sviluppo NodeJS/React)
+1. Seguire le istruzioni di installazione della Bash **Gash** qui [https://github.com/mauriziofonte/gash](https://github.com/mauriziofonte/gash) - in alternativa, installare _ZSH_, o qualunque altra shell di gradimento: io mi trovo bene con `gash` perchè è un tool che ho creato io, super minimale. Riporto un one-liner per installare _Gash_: `wget -qO- https://raw.githubusercontent.com/mauriziofonte/gash/refs/heads/main/install.sh | bash`
+2. Lanciare `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash` per installare NVM (per sviluppo NodeJS/React)
 3. Creare una coppia di chiavi pubblica/privata con il comando `ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/nome_chiave -C "utente@computer"` (comunicare il contenuto della chiave pubblica `~/.ssh/nome_chiave.pub`al proprio team, che la userà per esempio per abilitare l'accesso ad un repository GIT privato.)
 4. Creare un collegamento alla **home directory di Ubuntu** raggiungibile dal proprio _Desktop_ per visualizzare la home di Ubuntu tramite l'Esplora risorse di Windows: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `\\wsl$\Ubuntu-24.04\home\NOME_UTENTE`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-drive-icon.ico](/icons/ubuntu-drive-icon.ico))
 5. Creare un collegamento alla _Bash_ di Ubuntu raggiungibile dal proprio _Desktop_ per avviare un nuovo terminale: per farlo, cliccare sul _Desktop_ con il tasto destro del Mouse, Selezionare `Nuovo` > `Collegamento`, e immettere nel **percorso del collegamento** la stringa `C:\Windows\System32\wsl.exe -d Ubuntu-24.04 bash -c "cd /home/NOME_UTENTE && bash"`, dove **NOME_UTENTE** è il nome utente usato su Ubuntu. **Opzionale** : modificare l'icona del collegamento (consiglio questa: [ubuntu-icon.ico](/icons/ubuntu-icon.ico))
@@ -623,9 +627,9 @@ Questa configurazione contiene sia **impostazioni di mia preferenza personale**,
 
 ## Epilogo
 
-### Personalizzazione del Proprio Ecosistema LAMP Locale
+### Personalizzazione del Proprio Ecosistema LAMP+LAPP Locale
 
-Questa README è il mio progetto artigianale per installare e configurare un ambiente di sviluppo **locale** _LAMP_ su Windows 11 con WSL2. È il frutto delle mie esperienze personali, sia positive che negative, per raggiungere un flusso di lavoro che **mi soddisfi**. E' chiaro che, se questa guida funziona e va bene per me, la tua esperienza o il tuo gusto personale potrebbero essere diversi.
+Questa README è il mio progetto artigianale per installare e configurare un ambiente di sviluppo **locale** _LAMP+LAPP_ su Windows 11 con WSL2. È il frutto delle mie esperienze personali, sia positive che negative, per raggiungere un flusso di lavoro che **mi soddisfi**. E' chiaro che, se questa guida funziona e va bene per me, la tua esperienza o il tuo gusto personale potrebbero essere diversi.
 
 ### Contributo della Comunità
 
@@ -638,4 +642,3 @@ Procedendo con questa guida, assumi la piena responsabilità per qualsiasi modif
 ### Licenza
 
 Questo progetto è distribuito sotto la licenza MIT. Per ulteriori dettagli, fai riferimento al file [LICENSE](/LICENSE) nel repository
-

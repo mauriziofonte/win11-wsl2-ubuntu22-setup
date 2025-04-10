@@ -1,6 +1,6 @@
-# Setup a LAMP/LAPP Stack on Windows 11, with WSL2, Ubuntu 22.04, native systemd Services and VS Code optimizations
+# Setup a LAMP/LAPP Stack on Windows 11, with WSL2, Ubuntu 24.04, native systemd Services and VS Code optimizations
 
-This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP/LAPP Stack_ that is targeted on Windows 11 (and also on Windows 10, see below), with _WSL2_ and **Ubuntu 22.04**, with a _LAMP/LAPP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
+This project is intended to guide the developer through the installation, configuration and _workflow optimization_ of a _LAMP/LAPP Stack_ that is targeted on Windows 11 (and also on Windows 10, see below), with _WSL2_ and **Ubuntu 24.04**, with a _LAMP/LAPP Stack_ implemented via _native systemd services_ instead of containers/virtualization.
 
 In a hurry? Skip to the [Automated Installation instructions](#automated-install)!
 
@@ -28,7 +28,7 @@ Anyways, this guide is **not** intended to _force you_ to use native WSL Ubuntu 
 
 ## What will the LAMP/LAPP stack be?
 
-> TL;DR : PHP 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, **8.3**, Apache 2.4, MariaDB 10.6, and PostgreSQL 16
+> TL;DR : PHP 5.6, 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3, **8.4** Apache 2.4, MariaDB 11.4, and PostgreSQL 16
 
 The _LAMP/LAPP Stack_ will be configured in this way:
 
